@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.hardware.EV3DevPlatformsTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:45" hostname="muziektop" time="2.017">
+  <properties/>
+  <testcase name="testPlatformEV3" classname="ev3dev.hardware.EV3DevPlatformsTest" time="2.012"/>
+  <testcase name="testPlatformUnknownPlatform" classname="ev3dev.hardware.EV3DevPlatformsTest" time="0.005"/>
+  <system-out><![CDATA[2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - Switching to EV3Dev testing infrastructure
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Removing previous fileSystem infrastructure
+2021-08-08 15:40:45 [Test worker] DEBUG fake_ev3dev.BaseElement - Created Fake file system to implement devices for testing
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Path created: /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - 
+2021-08-08 15:40:45 [Test worker] INFO  f.ev3dev.sensors.FakeBattery - Adding a Battery device in the FileSystem for: EV3BRICK
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/power_supply/lego-ev3-battery
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.utils.Shell - Command: tree /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] WARN  ev3dev.utils.Shell - Cannot run program "tree": error=2, Bestand of map bestaat niet
+java.io.IOException: Cannot run program "tree": error=2, Bestand of map bestaat niet
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1128)
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1071)
+	at java.base/java.lang.Runtime.exec(Runtime.java:592)
+	at java.base/java.lang.Runtime.exec(Runtime.java:416)
+	at java.base/java.lang.Runtime.exec(Runtime.java:313)
+	at ev3dev.utils.Shell.execute(Shell.java:32)
+	at fake_ev3dev.ev3dev.sensors.FakeBattery.<init>(FakeBattery.java:63)
+	at ev3dev.hardware.EV3DevPlatformsTest.testPlatformEV3(EV3DevPlatformsTest.java:34)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.rules.ExpectedException$ExpectedExceptionStatement.evaluate(ExpectedException.java:239)
+	at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:110)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+	at jdk.internal.reflect.GeneratedMethodAccessor7.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:118)
+	at jdk.internal.reflect.GeneratedMethodAccessor6.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:182)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:164)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:412)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:56)
+	at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.io.IOException: error=2, Bestand of map bestaat niet
+	at java.base/java.lang.ProcessImpl.forkAndExec(Native Method)
+	at java.base/java.lang.ProcessImpl.<init>(ProcessImpl.java:340)
+	at java.base/java.lang.ProcessImpl.start(ProcessImpl.java:271)
+	at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1107)
+	... 55 common frames omitted
+2021-08-08 15:40:45 [Test worker] INFO  f.ev3dev.sensors.FakeBattery - COMMAND_ERROR
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/lego-port/port1
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/tacho-motor/motor1
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/lego-port/port2
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/tacho-motor/motor2
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/lego-port/port3
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/tacho-motor/motor3
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/lego-port/port4
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Creating path: /tmp/ev3dev_fake_system/tacho-motor/motor4
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.hardware.EV3DevDistros - Providing an EV3DevDistros instance
+2021-08-08 15:40:45 [Test worker] INFO  e.a.lego.motors.BaseRegulatedMotor - Configuring motor connected on Port: A
+2021-08-08 15:40:45 [Test worker] DEBUG e.a.lego.motors.BaseRegulatedMotor - Detecting motor on port: ev3-ports:outA
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Retrieving devices in path: 
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - ls /tmp/ev3dev_fake_system/lego-port
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Checking devices on: /tmp/ev3dev_fake_system/lego-port
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 1:
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/lego-port/port4/address
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outD
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outD.
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 2:
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/lego-port/port3/address
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outC
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outC.
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 3:
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/lego-port/port2/address
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outB
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outB.
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 4:
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/lego-port/port1/address
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outA
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outA.
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.hardware.EV3DevDevice - Detected device on path: /tmp/ev3dev_fake_system/lego-port/port1/address, ev3-ports:outA
+2021-08-08 15:40:45 [Test worker] DEBUG e.a.lego.motors.BaseRegulatedMotor - Setting port in mode: tacho-motor
+2021-08-08 15:40:45 [Test worker] TRACE ev3dev.utils.Sysfs - echo tacho-motor > /tmp/ev3dev_fake_system/lego-port/port1/mode
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Retrieving devices in path: 
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - ls /tmp/ev3dev_fake_system/tacho-motor
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Checking devices on: /tmp/ev3dev_fake_system/tacho-motor
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 1:
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/tacho-motor/motor4/address
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outD
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outD.
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 2:
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/tacho-motor/motor3/address
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outC
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outC.
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 3:
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/tacho-motor/motor2/address
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outB
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outB.
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Skipped device
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Device 4:
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - cat /tmp/ev3dev_fake_system/tacho-motor/motor1/address
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.utils.Sysfs - value: ev3-ports:outA
+2021-08-08 15:40:46 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Port expected: ev3-ports:outA, actual: ev3-ports:outA.
+2021-08-08 15:40:46 [Test worker] DEBUG ev3dev.hardware.EV3DevDevice - Detected device on path: /tmp/ev3dev_fake_system/tacho-motor/motor1/address, ev3-ports:outA
+2021-08-08 15:40:47 [Test worker] TRACE ev3dev.utils.Sysfs - echo reset > /tmp/ev3dev_fake_system/tacho-motor/motor1/command
+2021-08-08 15:40:47 [Test worker] DEBUG e.a.lego.motors.BaseRegulatedMotor - Motor ready to use on Port: A
+2021-08-08 15:40:47 [Test worker] INFO  fake_ev3dev.BaseElement - Switching to EV3Dev testing infrastructure
+2021-08-08 15:40:47 [Test worker] TRACE fake_ev3dev.BaseElement - Removing previous fileSystem infrastructure
+2021-08-08 15:40:47 [Test worker] DEBUG fake_ev3dev.BaseElement - Created Fake file system to implement devices for testing
+2021-08-08 15:40:47 [Test worker] TRACE fake_ev3dev.BaseElement - Path created: /tmp/ev3dev_fake_system
+2021-08-08 15:40:47 [Test worker] INFO  fake_ev3dev.BaseElement - 
+2021-08-08 15:40:47 [Test worker] DEBUG ev3dev.hardware.EV3DevDistros - Providing an EV3DevDistros instance
+2021-08-08 15:40:47 [Test worker] INFO  e.a.lego.motors.BaseRegulatedMotor - Configuring motor connected on Port: A
+2021-08-08 15:40:47 [Test worker] DEBUG e.a.lego.motors.BaseRegulatedMotor - Detecting motor on port: ev3-ports:outA
+2021-08-08 15:40:47 [Test worker] TRACE ev3dev.hardware.EV3DevDevice - Retrieving devices in path: 
+2021-08-08 15:40:47 [Test worker] TRACE ev3dev.utils.Sysfs - ls /tmp/ev3dev_fake_system/lego-port
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

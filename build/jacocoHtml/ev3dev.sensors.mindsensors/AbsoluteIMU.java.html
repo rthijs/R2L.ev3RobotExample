@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbsoluteIMU.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors.mindsensors</a> &gt; <span class="el_source">AbsoluteIMU.java</span></div><h1>AbsoluteIMU.java</h1><pre class="source lang-java linenums">package ev3dev.sensors.mindsensors;
+
+import ev3dev.sensors.BaseSensor;
+import ev3dev.sensors.GenericMode;
+import ev3dev.utils.Shell;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.SensorMode;
+
+/**
+ * &lt;b&gt;Mindsensors AbsoluteIMU&lt;/b&gt;&lt;br&gt;
+ * Sensor interface for the Mindsensors AbsoluteIMU family of sensors. The
+ * AbsoluteIMU sensors combine gyro, accelerometer and compass sensors in
+ * various combinations in a single housing. This interface works with all
+ * AbsoluteIMU models, but not all modes will work with any particular model.
+ *
+ * &lt;table border=1&gt;
+ * &lt;tr&gt;
+ * &lt;th colspan=4&gt;Supported modes&lt;/th&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;th&gt;Mode name&lt;/th&gt;
+ * &lt;th&gt;Description&lt;/th&gt;
+ * &lt;th&gt;unit(s)&lt;/th&gt;
+ * &lt;th&gt;Getter&lt;/th&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;td&gt;Magnetic&lt;/td&gt;
+ * &lt;td&gt;Measures the strength of the magnetic field over three axes&lt;/td&gt;
+ * &lt;td&gt;&lt;/td&gt;
+ * &lt;td&gt; {getMagneticMode() }&lt;/td&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;td&gt;Compass&lt;/td&gt;
+ * &lt;td&gt;Measures the orientation of the sensor&lt;/td&gt;
+ * &lt;td&gt;Degrees, corresponding to the compass rose&lt;/td&gt;
+ * &lt;td&gt; {getCompassMode() }&lt;/td&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;td&gt;Angle&lt;/td&gt;
+ * &lt;td&gt;Measures the orientation of the sensor&lt;/td&gt;
+ * &lt;td&gt;Degrees, corresponding to the right hand coordinate system&lt;/td&gt;
+ * &lt;td&gt; {getAngleMode() }&lt;/td&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;td&gt;Acceleration&lt;/td&gt;
+ * &lt;td&gt;The Acceleration mode measures the linear acceleration of the sensor over
+ * three axes&lt;/td&gt;
+ * &lt;td&gt;Metres/second^2&lt;/td&gt;
+ * &lt;td&gt; {getAccelerationMode() }&lt;/td&gt;
+ * &lt;/tr&gt;
+ * &lt;tr&gt;
+ * &lt;td&gt;Rate&lt;/td&gt;
+ * &lt;td&gt;The Rate mode measures the angular speed of the sensor over three axes&lt;/td&gt;
+ * &lt;td&gt;Degrees/second&lt;/td&gt;
+ * &lt;td&gt; {getRateMode() }&lt;/td&gt;
+ * &lt;/tr&gt;
+ * &lt;/table&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Sensor configuration&lt;/b&gt;&lt;br&gt;
+ * The gyro sensor of the AbsoluteIMU uses a filter to remove noise from
+ * the samples. The filter can be configured using the {setGyroFilter }
+ * method. &lt;br&gt;
+ * The compass sensor of the AbsoluteIMU can be calibrated to compensate
+ * for magnetical disturbances on the robot (soft iron calibration)
+ * using the {#startCalibration} and {stopCalibration} methods.
+ *
+ * &lt;p&gt;To calibrate Compass, mount it on your robot where it will be used and
+ * issue startCalibration method and then rotate AbsoluteIMU slowly along all
+ * three axes. (The Compass in AbsoluteIMU is a 3 axis compass, and hence
+ * needs to be turned along all three axes, and if it's mounted on your robot,
+ * the whole robot needs to rotate). Rotate one axis at a time, turn once in
+ * clock-wise direction completing at-least 360 degrees, and then turn it in
+ * anti-clock-wise direction, then go to next axis. Upon finishing turning
+ * along all axes, issue stopCalibration method.
+ *
+ * &lt;p&gt;See &lt;a href=
+ *      &quot;http://mindsensors.com/index.php?module=documents&amp;JAS_DocumentManager_op=downloadFile&amp;JAS_File_id=1369&quot;
+ *      &gt;Mindsensors IMU user guide&quot;&gt; Sensor Product page &lt;/a&gt;
+ * See &lt;a href=&quot;http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/&quot;&gt; The
+ *      leJOS sensor framework&lt;/a&gt;
+ * See {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ *
+ * @author Andy, Juan Antonio Breña Moral
+ */
+public class AbsoluteIMU extends BaseSensor {
+
+    private static final String MINDSENSORS_ABSOLUTEIMU = &quot;ms-absolute-imu 0x11&quot;;
+
+    //MODES
+    public static final String MODE_TILT = &quot;TILT&quot;;
+    public static final String MODE_ACCELEROMETER = &quot;ACCEL&quot;;
+    public static final String MODE_COMPASS = &quot;COMPASS&quot;;
+    public static final String MODE_MAGNETIC = &quot;MAG&quot;;
+    public static final String MODE_GYRO = &quot;GYRO&quot;;
+
+    //COMMANDS
+    public static final String START_CALIBRATION = &quot;BEGIN-COMP-CAL&quot;;
+    public static final String END_CALIBRATION = &quot;END-COMP-CAL&quot;;
+    public static final int LOW = 1;
+    public static final int MEDIUM = 2;
+    public static final int HIGH = 3;
+    public static final int VERY_HIGH = 4;
+    public static final String SET_ACCELERATION_2G = &quot;ACCEL-2G&quot;;
+    public static final String SET_ACCELERATION_4G = &quot;ACCEL-4G&quot;;
+    public static final String SET_ACCELERATION_8G = &quot;ACCEL-8G&quot;;
+    public static final String SET_ACCELERATION_16G = &quot;ACCEL-16G&quot;;
+
+    //I2C Register
+    public static final int GYRO_FILTER = 0x5a;
+
+    /**
+     * Constructor
+     *
+     * @param portName portName
+     */
+    public AbsoluteIMU(final Port portName) {
+<span class="fc" id="L118">        super(portName, LEGO_I2C, MINDSENSORS_ABSOLUTEIMU);</span>
+
+<span class="fc" id="L120">        setModes(new SensorMode[]{</span>
+            new GenericMode(this.PATH_DEVICE, 3, &quot;Acceleration&quot;),
+            new GenericMode(this.PATH_DEVICE, 3, &quot;Magnetic&quot;),
+            new GenericMode(this.PATH_DEVICE, 3, &quot;Gyro&quot;),
+            new GenericMode(this.PATH_DEVICE, 1, &quot;Compass&quot;),
+            new GenericMode(this.PATH_DEVICE, 3, &quot;Tilt&quot;)});
+
+<span class="fc" id="L127">        setRange(LOW);</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Send a single byte command represented by a letter
+     *
+     * @param cmd the letter that identifies the command
+     */
+    public void sendCommand(final String cmd) {
+<span class="fc" id="L136">        this.setStringAttribute(&quot;command&quot;, cmd);</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Return a SensorMode object that will provide tilt compensated compass data
+     * . The sample contains one element containing the bearing of the sensor
+     * relative to north expressed in degrees. East being at 90 degrees.
+     *
+     * @return a SensorMode object
+     */
+    public SensorMode getCompassMode() {
+<span class="fc" id="L147">        switchMode(MODE_COMPASS, SWITCH_DELAY);</span>
+<span class="fc" id="L148">        return getMode(3);</span>
+    }
+
+    /**
+     * Return a SensorMode object that will acceleration data for the X, Y and Z
+     * axis. The data is returned in units of m/s/s.
+     *
+     * @return a SensorMode object
+     */
+    public SensorMode getAccelerationMode() {
+<span class="nc" id="L158">        switchMode(MODE_ACCELEROMETER, SWITCH_DELAY);</span>
+<span class="nc" id="L159">        return getMode(0);</span>
+    }
+
+    /**
+     * Return a SensorMode object that will return Magnetic data for the X, Y and
+     * Z axis The data is returned in Guass
+     *
+     * @return a SensorMode object
+     */
+    public SensorMode getMagneticMode() {
+<span class="fc" id="L169">        switchMode(MODE_MAGNETIC, SWITCH_DELAY);</span>
+<span class="fc" id="L170">        return getMode(1);</span>
+    }
+
+    /**
+     * @return SensorMode for reading the mode's data.
+     */
+    public SensorMode getGyroMode() {
+<span class="fc" id="L177">        switchMode(MODE_GYRO, SWITCH_DELAY);</span>
+<span class="fc" id="L178">        return getMode(2);</span>
+    }
+
+    /**
+     * @return SensorMode for reading the mode's data.
+     */
+    public SensorMode getTiltMode() {
+<span class="fc" id="L185">        switchMode(MODE_TILT, SWITCH_DELAY);</span>
+<span class="fc" id="L186">        return getMode(4);</span>
+    }
+
+
+    /**
+     * Set the sensitivity used by the sensor. This setting impacts the maximum
+     * range of the returned value and the resolution of the reading.&lt;br&gt;
+     * LOW Acceleration 2G Gyro 250 degrees/second&lt;br&gt;
+     * MEDIUM Acceleration 4G Gyro 500 degrees/second&lt;br&gt;
+     * HIGH Acceleration 8G Gyro 2000 degrees/second&lt;br&gt;
+     * VERY_HIGH Acceleration 16G Gyro 2000 degrees/second&lt;br&gt;
+     * The default setting is LOW.
+     *
+     * @param range the selected range (LOW/MEDIUM/HIGH/VERY_HIGH)
+     */
+    public void setRange(int range) {
+<span class="fc" id="L202">        String cmd = &quot;&quot;;</span>
+<span class="fc bfc" id="L203" title="All 5 branches covered.">        switch (range) {</span>
+            case LOW:
+<span class="fc" id="L205">                cmd = SET_ACCELERATION_2G;</span>
+<span class="fc" id="L206">                break;</span>
+            case MEDIUM:
+<span class="fc" id="L208">                cmd = SET_ACCELERATION_4G;</span>
+<span class="fc" id="L209">                break;</span>
+            case HIGH:
+<span class="fc" id="L211">                cmd = SET_ACCELERATION_8G;</span>
+<span class="fc" id="L212">                break;</span>
+            case VERY_HIGH:
+<span class="fc" id="L214">                cmd = SET_ACCELERATION_16G;</span>
+<span class="fc" id="L215">                break;</span>
+            default:
+<span class="fc" id="L217">                throw new IllegalArgumentException(&quot;Range setting invalid&quot;);</span>
+        }
+<span class="fc" id="L219">        sendCommand(cmd);</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Set the smoothing filter for the gyro. &lt;br&gt;
+     * The Gyro readings are filtered with nth order finite impulse response
+     * filter, (where n ranges from 0 to 7) value 0 will apply no filter,
+     * resulting in faster reading, but noisier values.value 7 will apply stronger
+     * filter resulting in slower read (about 10 milli-seconds slower) but less
+     * noise.&lt;br&gt;
+     * The default value for the filter is 4.
+     *
+     * @param value (range 0-7)
+     */
+    public void setGyroFilter(int value) {
+<span class="nc bnc" id="L234" title="All 4 branches missed.">        if ((value &lt; 0) || (value &gt; 7)) {</span>
+<span class="nc" id="L235">            throw new IllegalArgumentException(&quot;Bad argument&quot;);</span>
+        }
+<span class="nc" id="L237">        final String i2c_command2 =</span>
+            &quot;echo \&quot;&quot; + value + &quot;\&quot; | dd bs=1 of=&quot; + this.PATH_DEVICE + &quot;/direct seek=$(( 0x5a ))&quot;;
+<span class="nc" id="L239">        final String[] cmd = {</span>
+            &quot;/bin/sh&quot;,
+            &quot;-c&quot;,
+            i2c_command2
+        };
+<span class="nc" id="L244">        Shell.execute(cmd);</span>
+<span class="nc" id="L245">    }</span>
+
+    /**
+     * To calibrate Compass, mount it on your robot where it will be used and
+     * issue startCalibration method and then rotate AbsoluteIMU slowly along all
+     * three axes. (The Compass in AbsoluteIMU is a 3 axis compass, and hence
+     * needs to be turned along all three axes, and if it's mounted on your robot,
+     * the whole robot needs to rotate). Rotate one axis at a time, turn once in
+     * clock-wise direction completing at-least 360 degrees, and then turn it in
+     * anti-clock-wise direction, then go to next axis. Upon finishing turning
+     * along all axes, issue stopCalibration method.
+     */
+    public void startCalibration() {
+<span class="nc" id="L258">        sendCommand(START_CALIBRATION);</span>
+<span class="nc" id="L259">    }</span>
+
+    /**
+     * Ends calibration sequence.
+     */
+    public void stopCalibration() {
+<span class="nc" id="L265">        sendCommand(END_CALIBRATION);</span>
+<span class="nc" id="L266">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

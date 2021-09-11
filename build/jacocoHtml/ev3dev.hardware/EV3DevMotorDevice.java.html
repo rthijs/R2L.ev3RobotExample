@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EV3DevMotorDevice.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware</a> &gt; <span class="el_source">EV3DevMotorDevice.java</span></div><h1>EV3DevMotorDevice.java</h1><pre class="source lang-java linenums">package ev3dev.hardware;
+
+/**
+ * Base class to interact with EV3Dev sysfs
+ * 
+ * @author Juan Antonio Breña Moral
+ *
+ */
+<span class="fc" id="L9">public abstract class EV3DevMotorDevice extends EV3DevDevice {</span>
+
+    protected static final String TACHO_MOTOR = &quot;tacho-motor&quot;;
+    protected static final String DC_MOTOR = &quot;dc-motor&quot;;
+    protected static final String AUTO_MODE = &quot;auto&quot;;
+
+    protected static final String POSITION_SP = &quot;position_sp&quot;;
+    protected static final String POSITION = &quot;position&quot;;
+    protected static final String SPEED = &quot;speed_sp&quot;;
+    protected static final String DUTY_CYCLE = &quot;duty_cycle_sp&quot;;
+
+    protected static final String COMMAND = &quot;command&quot;;
+    protected static final String RUN_FOREVER = &quot;run-forever&quot;;
+    protected static final String RUN_DIRECT = &quot;run-direct&quot;;
+    protected static final String RUN_TO_REL_POS = &quot;run-to-rel-pos&quot;;
+    protected static final String RUN_TO_ABS_POS = &quot;run-to-abs-pos&quot;;
+
+    protected static final String STOP_COMMAND = &quot;stop_action&quot;;
+    protected static final String COAST = &quot;coast&quot;;
+    protected static final String BRAKE = &quot;brake&quot;;
+    protected static final String HOLD = &quot;hold&quot;;
+    protected static final String STOP = &quot;stop&quot;;
+    protected static final String RESET = &quot;reset&quot;;
+
+    protected static final String STATE = &quot;state&quot;;
+    protected static final String STATE_RUNNING = &quot;running&quot;;
+    protected static final String STATE_STALLED = &quot;stalled&quot;;
+    protected static final String POWER = &quot;power&quot;;
+    protected static final String POLARITY = &quot;polarity&quot;;
+    protected static final String POLARITY_NORMAL = &quot;normal&quot;;
+    protected static final String POLARITY_INVERSED = &quot;inversed&quot;;
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.hardware.display.ImageUtilsTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:48" hostname="muziektop" time="0.097">
+  <properties/>
+  <testcase name="renderXRGBImage" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.078"/>
+  <testcase name="invalidRGBBufferTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.001"/>
+  <testcase name="renderBWImage" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.015"/>
+  <testcase name="invalidBWBufferTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.0"/>
+  <testcase name="invalidRGBStrideTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.001"/>
+  <testcase name="invalidBWStrideTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.0"/>
+  <testcase name="XRGBBufferLengthTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.001"/>
+  <testcase name="BWBufferLengthTest" classname="ev3dev.hardware.display.ImageUtilsTest" time="0.0"/>
+  <system-out><![CDATA[2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 128x128 with stride=640
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 128x128 with stride=512
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating BW image 128x128 with stride=32
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating BW image 128x128 with stride=16
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 128x128 with stride=384
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating BW image 128x128 with stride=8
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 128x128 with stride=640
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating BW image 128x128 with stride=32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseSensor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors</a> &gt; <span class="el_source">BaseSensor.java</span></div><h1>BaseSensor.java</h1><pre class="source lang-java linenums">package ev3dev.sensors;
+
+import ev3dev.hardware.EV3DevSensorDevice;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.SensorMode;
+import lejos.hardware.sensor.SensorModes;
+import lejos.utility.Delay;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.Objects;
+
+<span class="fc" id="L13">@Slf4j</span>
+public class BaseSensor extends EV3DevSensorDevice implements SensorModes {
+
+    public static final int SWITCH_DELAY = 400;
+    private ArrayList&lt;String&gt; modeList;
+<span class="fc" id="L18">    protected int currentMode = 0;</span>
+    protected SensorMode[] modes;
+
+    /**
+     * Constructor
+     *
+     * @param sensorPort sensorPort
+     * @param mode mode
+     * @param device device
+     */
+    public BaseSensor(final Port sensorPort, final String mode, final String device) {
+<span class="fc" id="L29">        super(sensorPort, mode, device);</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Constructor
+     *
+     * @param sensorPort sensorPort
+     * @param mode mode
+     */
+    public BaseSensor(final Port sensorPort, final String mode) {
+<span class="fc" id="L39">        super(sensorPort, mode);</span>
+<span class="fc" id="L40">    }</span>
+
+    /**
+     * Define the set of modes to be made available for this sensors.
+     * @param m An array containing a list of modes
+     */
+    protected void setModes(SensorMode[] m) {
+<span class="fc" id="L47">        modes = m;</span>
+        // force the list to be rebuilt
+<span class="fc" id="L49">        modeList = null;</span>
+<span class="fc" id="L50">        currentMode = 0;</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Returns all modes availables from the sensor.
+     *
+     * @return List of modes available
+     */
+    public ArrayList&lt;String&gt; getAvailableModes() {
+        //TODO Refactor
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (modeList == null) {</span>
+<span class="fc" id="L61">            modeList = new ArrayList&lt;&gt;(modes.length);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            if (modes != null) {</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                for (SensorMode m : modes) {</span>
+<span class="fc" id="L64">                    modeList.add(m.getName());</span>
+                }
+            }
+        }
+<span class="fc" id="L68">        return modeList;</span>
+    }
+
+
+    /**
+     * Get a SensorMode associated with a mode index.
+     *
+     * &lt;p&gt;&lt;b&gt;WARNING:&lt;/b&gt; This function &lt;b&gt;does not&lt;/b&gt;
+     * switch the sensor to the correct mode. Unless the sensor is
+     * switched to the correct mode, the reads from this SensorMode
+     * will be invalid.
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     */
+    public SensorMode getMode(int mode) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (modeInvalid(mode)) {</span>
+<span class="fc" id="L83">            throw new IllegalArgumentException(&quot;Invalid mode &quot; + mode);</span>
+        }
+<span class="fc" id="L85">        return modes[mode];</span>
+    }
+
+
+    /**
+     * Get a SensorMode associated with a mode name.
+     *
+     * &lt;p&gt;&lt;b&gt;WARNING:&lt;/b&gt; This function &lt;b&gt;does not&lt;/b&gt;
+     * switch the sensor to the correct mode. Unless the sensor is
+     * switched to the correct mode, the reads from this SensorMode
+     * will be invalid.
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     */
+    public SensorMode getMode(String modeName) {
+<span class="fc" id="L99">        int index = getIndex(modeName);</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (index != -1) {</span>
+<span class="fc" id="L101">            return modes[index];</span>
+        } else {
+<span class="fc" id="L103">            throw new IllegalArgumentException(&quot;No such mode &quot; + modeName);</span>
+        }
+    }
+
+    private boolean modeInvalid(int mode) {
+<span class="pc bpc" id="L108" title="1 of 6 branches missed.">        return modes == null || mode &lt; 0 || mode &gt;= modes.length;</span>
+    }
+
+    private int getIndex(String modeName) {
+<span class="fc" id="L112">        return getAvailableModes().indexOf(modeName);</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L116">        return modes[currentMode].getName();</span>
+    }
+
+    public int sampleSize() {
+<span class="fc" id="L120">        return modes[currentMode].sampleSize();</span>
+    }
+
+    /**
+     * Set the current SensorMode index.
+     *
+     * &lt;p&gt;&lt;b&gt;WARNING:&lt;/b&gt; this function works properly only when
+     * the sensor is already in the appropriate mode. This means
+     * that the returned reading will be valid only when
+     * you previously activated the &quot;current mode&quot; via a call
+     * to get*Mode() or switchMode().
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     *
+     * @param sample The array to store the sample in.
+     * @param offset The elements of the sample are stored in the array starting at the offset position.
+     */
+    public void fetchSample(float[] sample, int offset) {
+<span class="fc" id="L137">        modes[currentMode].fetchSample(sample, offset);</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Set the current SensorMode index.
+     *
+     * &lt;p&gt;&lt;b&gt;WARNING:&lt;/b&gt; This function &lt;b&gt;does not&lt;/b&gt;
+     * switch the sensor to the correct mode. Unless the sensor is
+     * switched to the correct mode, the reads from the&quot;current&quot; SensorMode
+     * will be invalid.
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     */
+    public void setCurrentMode(int mode) {
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (modeInvalid(mode)) {</span>
+<span class="fc" id="L151">            throw new IllegalArgumentException(&quot;Invalid mode &quot; + mode);</span>
+        } else {
+<span class="fc" id="L153">            currentMode = mode;</span>
+        }
+<span class="fc" id="L155">    }</span>
+
+
+    public int getCurrentMode() {
+<span class="fc" id="L159">        return currentMode;</span>
+    }
+
+    /**
+     * Set the current SensorMode name.
+     *
+     * &lt;p&gt;&lt;b&gt;WARNING:&lt;/b&gt; This function &lt;b&gt;does not&lt;/b&gt;
+     * switch the sensor to the correct mode. Unless the sensor is
+     * switched to the correct mode, the reads from the&quot;current&quot; SensorMode
+     * will be invalid.
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     */
+    public void setCurrentMode(String modeName) {
+<span class="fc" id="L172">        int mode = getIndex(modeName);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        if (mode == -1) {</span>
+<span class="fc" id="L174">            throw new IllegalArgumentException(&quot;Invalid mode &quot; + modeName);</span>
+        } else {
+<span class="fc" id="L176">            currentMode = mode;</span>
+        }
+<span class="fc" id="L178">    }</span>
+
+    public int getModeCount() {
+<span class="fc" id="L181">        return modes.length;</span>
+    }
+
+    /**
+     * Read current sensor mode from the kernel.
+     *
+     * @return Sensor mode identifier.
+     */
+    protected String getSystemMode() {
+<span class="fc" id="L190">        return this.getStringAttribute(SENSOR_MODE);</span>
+    }
+
+    /**
+     * Write requested sensor mode to the kernel.
+     *
+     * @param mode Sensor mode identifier.
+     */
+    private void setSystemMode(String mode) {
+<span class="fc" id="L199">        this.setStringAttribute(SENSOR_MODE, mode);</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Switch the sensor to the specified mode, if necessary.
+     *
+     * &lt;p&gt;Note: the mode switch will make future reads from
+     * SensorModes for other modes invalid. On the other hand, it will
+     * make reads valid for the SensorMode associated with the mode the
+     * sensor is switching to.
+     * See {@link GenericMode#fetchSample(float[], int)}&lt;/p&gt;
+     *
+     * @param newMode Identifier of the sensor mode (not its name).
+     * @param switchDelay Delay until the sensor starts sending new data.
+     */
+    public void switchMode(String newMode, long switchDelay) {
+<span class="fc" id="L215">        String oldMode = getSystemMode();</span>
+
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        if (!Objects.equals(oldMode, newMode)) {</span>
+<span class="fc" id="L218">            setSystemMode(newMode);</span>
+<span class="fc" id="L219">            Delay.msDelay(switchDelay);</span>
+        }
+<span class="fc" id="L221">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImageUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">ImageUtils.java</span></div><h1>ImageUtils.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.awt.image.MultiPixelPackedSampleModel;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
+
+/**
+ * Common image utilities for framebuffer manipulation
+ *
+ * @since 2.4.7
+ */
+<span class="fc" id="L23">@Slf4j</span>
+<span class="nc" id="L24">public class ImageUtils {</span>
+
+    /**
+     * Create new ev3dev-compatible XRGB image.
+     *
+     * @param w Image width
+     * @param h Image height
+     * @return Configured BufferedImage
+     */
+    public static BufferedImage createXRGBImage(int w, int h) {
+<span class="nc" id="L34">        return createXRGBImage(w, h, w * 4);</span>
+    }
+
+    /**
+     * Create new XRGB image.
+     *
+     * @param w      Image width
+     * @param h      Image height
+     * @param stride Image scanline stride, i.e. how long the row is in bytes.
+     * @return Configured BufferedImage
+     */
+    public static BufferedImage createXRGBImage(int w, int h, int stride) {
+<span class="fc" id="L46">        return createXRGBImage(w, h, stride, new byte[stride * h]);</span>
+    }
+
+    /**
+     * Create new XRGB image.
+     *
+     * @param width  Image width
+     * @param height Image height
+     * @param stride Image scanline stride, i.e. how long the row is in bytes.
+     * @param buffer Backing buffer.
+     * @return Configured BufferedImage
+     */
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    public static BufferedImage createXRGBImage(int width, int height, int stride, @NonNull byte[] buffer) {</span>
+<span class="fc" id="L59">        return createXRGBImage(width, height, stride, getDefaultComponentOffsets(), buffer);</span>
+    }
+
+    /**
+     * Create new XRGB image.
+     *
+     * @param width   Image width
+     * @param height  Image height
+     * @param stride  Image scanline stride, i.e. how long the row is in bytes.
+     * @param offsets Array of size 4 describing the offsets of color bands: { R, G, B, A }
+     * @param buffer  Backing buffer.
+     * @return Configured BufferedImage
+     */
+    public static BufferedImage createXRGBImage(
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        int width, int height, int stride, int[] offsets, @NonNull byte[] buffer) {</span>
+
+<span class="fc" id="L75">        LOGGER.trace(&quot;creating XRGB image {}x{} with stride={}&quot;, width, height, stride);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (buffer.length &lt; (stride * height)) {</span>
+<span class="fc" id="L77">            throw new IllegalArgumentException(&quot;Buffer is smaller than height*stride&quot;);</span>
+        }
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (stride &lt; width * 4) {</span>
+<span class="fc" id="L80">            throw new IllegalArgumentException(&quot;Stride is smaller than width * 4&quot;);</span>
+        }
+<span class="fc" id="L82">        DataBuffer db = new DataBufferByte(buffer, buffer.length);</span>
+
+        // initialize buffer &lt;-&gt; samples bridge
+<span class="fc" id="L85">        PixelInterleavedSampleModel sm = new PixelInterleavedSampleModel(</span>
+                DataBuffer.TYPE_BYTE, width, height,
+                4, stride, offsets);
+
+        // initialize color interpreter
+<span class="fc" id="L90">        ColorSpace spc = ColorSpace.getInstance(ColorSpace.CS_sRGB);</span>
+<span class="fc" id="L91">        ComponentColorModel cm = new ComponentColorModel(spc, true, false,</span>
+                Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+
+        // create raster
+<span class="fc" id="L95">        WritableRaster wr = Raster.createWritableRaster(sm, db, null);</span>
+
+        // glue everything together
+<span class="fc" id="L98">        return new BufferedImage(cm, wr, false, null);</span>
+    }
+
+    /**
+     * Get default XRGB component offsets.
+     *
+     * @return Offsets: { R, G, B, A }
+     */
+    public static int[] getDefaultComponentOffsets() {
+<span class="fc" id="L107">        return new int[]{2, 1, 0, 3};</span>
+    }
+
+    /**
+     * Create new BW image.
+     *
+     * @param width     Image width.
+     * @param height    Image height.
+     * @param zeroBlack Whether black color is represented by the 0 bit value.
+     * @return Configured BufferedImage.
+     */
+    public static BufferedImage createBWImage(int width, int height, boolean zeroBlack) {
+<span class="nc" id="L119">        int stride = (width + 7) / 8;</span>
+<span class="nc" id="L120">        return createBWImage(width, height, stride, zeroBlack, new byte[stride * height]);</span>
+    }
+
+    /**
+     * Create new BW image backed by existing data.
+     *
+     * @param width     Image width.
+     * @param height    Image height.
+     * @param zeroBlack Whether black color is represented by the 0 bit value.
+     * @param backed    Backing byte buffer.
+     * @return Configured BufferedImage.
+     */
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    public static BufferedImage createBWImage(int width, int height, boolean zeroBlack, @NonNull byte[] backed) {</span>
+<span class="nc" id="L133">        int stride = (width + 7) / 8;</span>
+<span class="nc" id="L134">        return createBWImage(width, height, stride, zeroBlack, backed);</span>
+    }
+
+
+    /**
+     * Create new BW image.
+     *
+     * @param width     Image width.
+     * @param height    Image height.
+     * @param stride    Image scanline stride, i.e. how long the row is in bytes.
+     * @param zeroBlack Whether black color is represented by the 0 bit value.
+     * @return Configured BufferedImage.
+     */
+    public static BufferedImage createBWImage(int width, int height, int stride, boolean zeroBlack) {
+<span class="fc" id="L148">        return createBWImage(width, height, stride, zeroBlack, new byte[stride * height]);</span>
+    }
+
+    /**
+     * Create new BW image backed by existing data.
+     *
+     * @param width     Image width.
+     * @param height    Image height.
+     * @param stride    Image scanline stride, i.e. how long the row is in bytes.
+     * @param zeroBlack Whether black color is represented by the 0 bit value.
+     * @param backed    Backing byte buffer.
+     * @return Configured BufferedImage.
+     */
+    public static BufferedImage createBWImage(
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        int width, int height, int stride, boolean zeroBlack, @NonNull byte[] backed) {</span>
+
+<span class="fc" id="L164">        LOGGER.trace(&quot;creating BW image {}x{} with stride={}&quot;, width, height, stride);</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (backed.length &lt; (stride * height)) {</span>
+<span class="fc" id="L166">            throw new IllegalArgumentException(&quot;Buffer is smaller than height*stride&quot;);</span>
+        }
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (stride &lt; width / 8) {</span>
+<span class="fc" id="L169">            throw new IllegalArgumentException(&quot;Stride is smaller than width/8&quot;);</span>
+        }
+        // initialize backing store
+<span class="fc" id="L172">        DataBuffer db = new DataBufferByte(backed, backed.length);</span>
+
+        // initialize buffer &lt;-&gt; sample mapping
+<span class="fc" id="L175">        MultiPixelPackedSampleModel packing =</span>
+                new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                        width, height,
+                        1, stride, 0);
+
+        // initialize raster
+<span class="fc" id="L181">        WritableRaster wr = Raster.createWritableRaster(packing, db, null);</span>
+
+        // initialize color interpreter
+        byte[] mapPixels;
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (zeroBlack) {</span>
+<span class="fc" id="L186">            mapPixels = new byte[]{(byte) 0x00, (byte) 0xFF};</span>
+        } else {
+<span class="nc" id="L188">            mapPixels = new byte[]{(byte) 0xFF, (byte) 0x00};</span>
+        }
+<span class="fc" id="L190">        IndexColorModel cm = new IndexColorModel(1, mapPixels.length, mapPixels, mapPixels, mapPixels);</span>
+
+        // glue everything together
+<span class="fc" id="L193">        return new BufferedImage(cm, wr, false, null);</span>
+    }
+
+    /**
+     * Convert image to the underlying byte buffer.
+     *
+     * @param image Configured BufferedImage.
+     * @return Byte array.
+     */
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">    public static byte[] getImageBytes(@NonNull BufferedImage image) {</span>
+<span class="fc" id="L203">        WritableRaster rst = image.getRaster();</span>
+<span class="fc" id="L204">        DataBuffer buf = rst.getDataBuffer();</span>
+<span class="fc" id="L205">        return ((DataBufferByte) buf).getData();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Battery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors</a> &gt; <span class="el_source">Battery.java</span></div><h1>Battery.java</h1><pre class="source lang-java linenums">package ev3dev.sensors;
+
+import ev3dev.hardware.EV3DevDevice;
+import ev3dev.hardware.EV3DevFileSystem;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.utils.Sysfs;
+import lejos.hardware.Power;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * The class Battery interacts with EV3Dev to get information about battery used.
+ *
+ * @author Juan Antonio Breña Moral
+ * @see &lt;a href=&quot;https://www.kernel.org/doc/Documentation/power/power_supply_class.txt&quot;&gt;https://www.kernel.org/doc/Documentation/power/power_supply_class.txt&lt;/a&gt;
+ * @see &lt;a href=&quot;https://github.com/ev3dev/ev3dev-lang/blob/develop/wrapper-specification.md#direct-attribute-mappings-5&quot;&gt;https://github.com/ev3dev/ev3dev-lang/blob/develop/wrapper-specification.md#direct-attribute-mappings-5&lt;/a&gt;
+ */
+public class Battery extends EV3DevDevice implements Power {
+
+<span class="fc" id="L20">    private static final Logger LOGGER = LoggerFactory.getLogger(Battery.class);</span>
+
+    private final String BATTERY;
+    private final String BATTERY_EV3;
+    private final String BATTERY_PISTORMS;
+    private final String BATTERY_BRICKPI;
+    private final String BATTERY_BRICKPI3;
+
+    private String BATTERY_PATH;
+<span class="fc" id="L29">    private final String VOLTAGE = &quot;voltage_now&quot;;</span>
+<span class="fc" id="L30">    private final String CURRENT = &quot;current_now&quot;;</span>
+
+<span class="fc" id="L32">    private String BATTERY_PATH_LOCAL = &quot;&quot;;</span>
+
+    private static Battery instance;
+
+    /**
+     * Get a singleton Battery object
+     *
+     * @return Battery
+     */
+    public static Battery getInstance() {
+        //TODO Refactor
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L44">            instance = new Battery();</span>
+        }
+<span class="fc" id="L46">        return instance;</span>
+    }
+
+    // Prevent duplicate objects
+<span class="fc" id="L50">    private Battery() {</span>
+
+<span class="fc" id="L52">        LOGGER.debug(&quot;Init sensor&quot;);</span>
+
+<span class="fc" id="L54">        BATTERY = ev3DevProperties.getProperty(&quot;battery&quot;);</span>
+<span class="fc" id="L55">        BATTERY_EV3 = ev3DevProperties.getProperty(&quot;ev3.battery&quot;);</span>
+<span class="fc" id="L56">        BATTERY_PISTORMS = ev3DevProperties.getProperty(&quot;pistorms.battery&quot;);</span>
+<span class="fc" id="L57">        BATTERY_BRICKPI = ev3DevProperties.getProperty(&quot;brickpi.battery&quot;);</span>
+<span class="fc" id="L58">        BATTERY_BRICKPI3 = ev3DevProperties.getProperty(&quot;brickpi3.battery&quot;);</span>
+
+        //TODO Create separator variable for the whole project
+<span class="fc" id="L61">        BATTERY_PATH = EV3DevFileSystem.getRootPath() + &quot;/&quot; + BATTERY;</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="fc" id="L63">            BATTERY_PATH_LOCAL += BATTERY_PATH + &quot;/&quot; + BATTERY_EV3;</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        } else if (CURRENT_PLATFORM.equals(EV3DevPlatform.PISTORMS)) {</span>
+<span class="nc" id="L65">            BATTERY_PATH_LOCAL += BATTERY_PATH + &quot;/&quot; + BATTERY_PISTORMS;</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        } else if (CURRENT_PLATFORM.equals(EV3DevPlatform.BRICKPI)) {</span>
+<span class="nc" id="L67">            BATTERY_PATH_LOCAL += BATTERY_PATH + &quot;/&quot; + BATTERY_BRICKPI;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        } else if (CURRENT_PLATFORM.equals(EV3DevPlatform.BRICKPI3)) {</span>
+<span class="nc" id="L69">            BATTERY_PATH_LOCAL += BATTERY_PATH + &quot;/&quot; + BATTERY_BRICKPI3;</span>
+        }
+<span class="fc" id="L71">    }</span>
+
+    @Override
+    public int getVoltageMilliVolt() {
+<span class="fc" id="L75">        return (int) Sysfs.readFloat(BATTERY_PATH_LOCAL + &quot;/&quot; + VOLTAGE) / 1000;</span>
+    }
+
+    /**
+     * Returns voltage of the battery in microvolts.
+     *
+     * @return voltage
+     */
+    public float getVoltage() {
+<span class="fc" id="L84">        return Sysfs.readFloat(BATTERY_PATH_LOCAL + &quot;/&quot; + VOLTAGE) / 1000000;</span>
+    }
+
+    //TODO Review output
+    //TODO Review units
+
+    /**
+     * Returns the current of the battery in amps.
+     *
+     * @return current
+     */
+    public float getBatteryCurrent() {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="fc" id="L97">            return Sysfs.readFloat(BATTERY_PATH + &quot;/&quot; + BATTERY_EV3 + &quot;/&quot; + CURRENT);</span>
+        } else {
+<span class="nc" id="L99">            LOGGER.warn(&quot;This method is not available for {} &amp; {}&quot;, EV3DevPlatform.PISTORMS, EV3DevPlatform.BRICKPI);</span>
+<span class="nc" id="L100">            return -1f;</span>
+        }
+    }
+
+    //TODO Review this method in the future.
+    @Override
+    public float getMotorCurrent() {
+<span class="nc" id="L107">        throw new UnsupportedOperationException(&quot;This feature is not implemented&quot;);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

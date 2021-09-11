@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LCDJessie.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators</a> &gt; <span class="el_source">LCDJessie.java</span></div><h1>LCDJessie.java</h1><pre class="source lang-java linenums">package ev3dev.actuators;
+
+import ev3dev.hardware.EV3DevDevice;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.utils.Sysfs;
+import lejos.hardware.lcd.GraphicsLCD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
+
+public class LCDJessie extends EV3DevDevice implements GraphicsLCD {
+
+<span class="nc" id="L26">    private static final Logger log = LoggerFactory.getLogger(LCDJessie.class);</span>
+
+    public static final String EV3DEV_EV3_DEVICES_PATH = &quot;/dev&quot;;
+    public static final String EV3DEV_EV3_LCD_NAME = &quot;fb0&quot;;
+    public static final String EV3DEV_EV3_LCD_PATH = EV3DEV_EV3_DEVICES_PATH + &quot;/&quot; + EV3DEV_EV3_LCD_NAME;
+    public static final String EV3DEV_LCD_KEY = &quot;EV3DEV_LCD_KEY&quot;;
+<span class="nc" id="L32">    public static final String FB_PATH =</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        Objects.nonNull(System.getProperty(EV3DEV_LCD_KEY)) ? System.getProperty(EV3DEV_LCD_KEY) : EV3DEV_EV3_LCD_PATH;</span>
+
+<span class="nc" id="L35">    private int SCREEN_WIDTH = 0;</span>
+<span class="nc" id="L36">    private int SCREEN_HEIGHT = 0;</span>
+<span class="nc" id="L37">    private int LINE_LEN = 0;</span>
+<span class="nc" id="L38">    private int BUFFER_SIZE = 0;</span>
+
+    public static final int EV3_SCREEN_WIDTH = 178;
+    public static final int EV3_SCREEN_HEIGHT = 128;
+    public static final int EV3_LINE_LEN = 24;
+    public static final int EV3_ROWS = 128;
+    public static final int EV3_BUFFER_SIZE = EV3_LINE_LEN * EV3_ROWS;
+
+    private BufferedImage image;
+    private Graphics2D g2d;
+
+    private static GraphicsLCD instance;
+
+    /**
+     * Singleton constructor
+     *
+     * @return A Sound instance
+     */
+    public static GraphicsLCD getInstance() {
+        //TODO Refactor
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L59">            instance = new LCDJessie();</span>
+        }
+<span class="nc" id="L61">        return instance;</span>
+    }
+
+    // Prevent duplicate objects
+<span class="nc" id="L65">    private LCDJessie() {</span>
+
+<span class="nc" id="L67">        log.info(&quot;Instancing LCD for Jessie&quot;);</span>
+
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="nc" id="L70">            init(EV3_SCREEN_WIDTH, EV3_SCREEN_HEIGHT, EV3_LINE_LEN, EV3_BUFFER_SIZE);</span>
+        } else {
+<span class="nc" id="L72">            log.error(&quot;This actuator was only tested for: {}&quot;, EV3DevPlatform.EV3BRICK);</span>
+<span class="nc" id="L73">            throw new RuntimeException(&quot;This actuator was only tested for: &quot; + EV3DevPlatform.EV3BRICK);</span>
+        }
+<span class="nc" id="L75">    }</span>
+
+    private void init(
+        final int width,
+        final int height,
+        final int lineLength,
+        final int bufferSize) {
+
+<span class="nc" id="L83">        this.SCREEN_WIDTH = width;</span>
+<span class="nc" id="L84">        this.SCREEN_HEIGHT = height;</span>
+<span class="nc" id="L85">        this.LINE_LEN = lineLength;</span>
+<span class="nc" id="L86">        this.BUFFER_SIZE = bufferSize;</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (Files.notExists(Paths.get(FB_PATH))) {</span>
+<span class="nc" id="L89">            throw new RuntimeException(&quot;Device path not found: &quot; + FB_PATH);</span>
+        }
+
+<span class="nc" id="L92">        byte[] data = new byte[bufferSize];</span>
+<span class="nc" id="L93">        byte[] bwarr = {(byte) 0xff, (byte) 0x00};</span>
+<span class="nc" id="L94">        IndexColorModel bwcm = new IndexColorModel(1, bwarr.length, bwarr, bwarr, bwarr);</span>
+
+<span class="nc" id="L96">        DataBuffer db = new DataBufferByte(data, data.length);</span>
+<span class="nc" id="L97">        WritableRaster wr = Raster.createPackedRaster(db, SCREEN_WIDTH, SCREEN_HEIGHT, 1, null);</span>
+
+<span class="nc" id="L99">        this.image = new BufferedImage(bwcm, wr, false, null);</span>
+<span class="nc" id="L100">        this.g2d = (Graphics2D) image.getGraphics();</span>
+
+<span class="nc" id="L102">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L103">        g2d.fillRect(0, 0, image.getWidth(), image.getHeight());</span>
+<span class="nc" id="L104">        this.refresh();</span>
+<span class="nc" id="L105">    }</span>
+
+    public BufferedImage getImage() {
+<span class="nc" id="L108">        return image;</span>
+    }
+
+    /**
+     * Write LCD with current context
+     */
+    public void flush() {
+
+<span class="nc" id="L116">        byte[] buf = new byte[BUFFER_SIZE];</span>
+        int bitPos;
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        for (int i = 0; i &lt; SCREEN_HEIGHT; i++) {</span>
+<span class="nc" id="L119">            bitPos = 0;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            for (int j = 0; j &lt; SCREEN_WIDTH; j++) {</span>
+
+<span class="nc bnc" id="L122" title="All 2 branches missed.">                if (bitPos &gt; 7) {</span>
+<span class="nc" id="L123">                    bitPos = 0;</span>
+                }
+
+                //TODO: Rewrite not to use getRGB()! It results in low performance
+<span class="nc" id="L127">                Color color = new Color(image.getRGB(j, i));</span>
+                //Combine all colours together 255+255+255 = 765
+<span class="nc" id="L129">                int y = (int) (0.2126 * color.getRed() + 0.7152 * color.getBlue() + 0.0722 * color.getGreen());</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                if (y &lt; 128) {</span>
+<span class="nc" id="L131">                    buf[i * LINE_LEN + j / 8] |= (1 &lt;&lt; bitPos);</span>
+                } else {
+<span class="nc" id="L133">                    buf[i * LINE_LEN + j / 8] &amp;= ~(1 &lt;&lt; bitPos);</span>
+                }
+<span class="nc" id="L135">                bitPos++;</span>
+            }
+        }
+
+<span class="nc" id="L139">        Sysfs.writeBytes(FB_PATH, buf);</span>
+<span class="nc" id="L140">    }</span>
+
+
+    //Graphics LCD
+
+    @Override
+    public void translate(int x, int y) {
+<span class="nc" id="L147">        g2d.translate(x, y);</span>
+<span class="nc" id="L148">    }</span>
+
+    @Override
+    public Font getFont() {
+<span class="nc" id="L152">        return g2d.getFont();</span>
+    }
+
+    @Override
+    public void setFont(Font font) {
+<span class="nc" id="L157">        g2d.setFont(font);</span>
+<span class="nc" id="L158">    }</span>
+
+
+    @Override
+    public int getTranslateX() {
+<span class="nc" id="L163">        return 0;</span>
+    }
+
+    @Override
+    public int getTranslateY() {
+<span class="nc" id="L168">        return 0;</span>
+    }
+
+    /**
+     * Use in combination with possible values from
+     * lejos.robotics.Color
+     *
+     * @param color Color
+     */
+    @Override
+    public void setColor(int color) {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (color == lejos.robotics.Color.WHITE) {</span>
+<span class="nc" id="L180">            g2d.setColor(Color.WHITE);</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        } else if (color == lejos.robotics.Color.BLACK) {</span>
+<span class="nc" id="L182">            g2d.setColor(Color.BLACK);</span>
+        } else {
+<span class="nc" id="L184">            throw new IllegalArgumentException(&quot;Bad color configured&quot;);</span>
+        }
+<span class="nc" id="L186">    }</span>
+
+    @Override
+    public void setColor(int i, int i1, int i2) {
+<span class="nc bnc" id="L190" title="All 6 branches missed.">        if ((i == 0) &amp;&amp; (i1 == 0) &amp;&amp; (i2 == 0)) {</span>
+<span class="nc" id="L191">            g2d.setColor(Color.BLACK);</span>
+<span class="nc bnc" id="L192" title="All 6 branches missed.">        } else if ((i == 255) &amp;&amp; (i1 == 255) &amp;&amp; (i2 == 255)) {</span>
+<span class="nc" id="L193">            g2d.setColor(Color.WHITE);</span>
+        } else {
+<span class="nc" id="L195">            log.debug(&quot;EV3 Display only accepts rgb(0,0,0) or rgb(255,255,555)&quot;);</span>
+        }
+<span class="nc" id="L197">    }</span>
+
+    @Override
+    public void setPixel(int i, int i1, int i2) {
+<span class="nc" id="L201">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L202">    }</span>
+
+    @Override
+    public int getPixel(int i, int i1) {
+<span class="nc" id="L206">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L207">        return -1;</span>
+    }
+
+    @Override
+    public void drawString(String s, int i, int i1, int i2, boolean b) {
+<span class="nc" id="L212">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L213">    }</span>
+
+    @Override
+    public void drawString(String s, int i, int i1, int i2) {
+<span class="nc" id="L217">        g2d.drawString(s, i, i1);</span>
+<span class="nc" id="L218">    }</span>
+
+    @Override
+    public void drawSubstring(String s, int i, int i1, int i2, int i3, int i4) {
+<span class="nc" id="L222">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L223">    }</span>
+
+    @Override
+    public void drawChar(char c, int i, int i1, int i2) {
+<span class="nc" id="L227">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L228">    }</span>
+
+    @Override
+    public void drawChars(char[] chars, int i, int i1, int i2, int i3, int i4) {
+<span class="nc" id="L232">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L233">    }</span>
+
+    //TODO Review LeJOS Javadocs
+    @Override
+    public int getStrokeStyle() {
+<span class="nc" id="L238">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L239">        return -1;</span>
+    }
+
+    //TODO Review LeJOS Javadocs
+    @Override
+    public void setStrokeStyle(int i) {
+<span class="nc" id="L245">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L246">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegionRop(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+<span class="nc" id="L251">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L252">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegionRop(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) {
+<span class="nc" id="L257">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L258">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegion(Image image, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+<span class="nc" id="L263">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L264">    }</span>
+
+    @Override
+    public void drawImage(Image image, int i, int i1, int i2) {
+<span class="nc" id="L268">        g2d.drawImage(image, i, i1, null);</span>
+<span class="nc" id="L269">    }</span>
+
+    @Override
+    public void drawLine(int x1, int y1, int x2, int y2) {
+<span class="nc" id="L273">        g2d.drawLine(x1, y1, x2, y2);</span>
+<span class="nc" id="L274">    }</span>
+
+    @Override
+    public void fillRect(int x, int y, int width, int height) {
+<span class="nc" id="L278">        g2d.fillRect(x, y, width, height);</span>
+<span class="nc" id="L279">    }</span>
+
+    @Override
+    public void copyArea(int i, int i1, int i2, int i3, int i4, int i5, int i6) {
+<span class="nc" id="L283">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L284">    }</span>
+
+    @Override
+    public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+<span class="nc" id="L288">        g2d.drawRoundRect(x, y, width, height, arcWidth, arcHeight);</span>
+<span class="nc" id="L289">    }</span>
+
+    @Override
+    public void drawRect(int x, int y, int width, int height) {
+<span class="nc" id="L293">        g2d.drawRect(x, y, width, height);</span>
+<span class="nc" id="L294">    }</span>
+
+    @Override
+    public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+<span class="nc" id="L298">        g2d.drawArc(x, y, width, height, startAngle, arcAngle);</span>
+<span class="nc" id="L299">    }</span>
+
+    @Override
+    public void fillArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+<span class="nc" id="L303">        g2d.fillArc(x, y, width, height, startAngle, arcAngle);</span>
+<span class="nc" id="L304">    }</span>
+
+    // CommonLCD
+
+    @Override
+    public void refresh() {
+<span class="nc" id="L310">        flush();</span>
+<span class="nc" id="L311">    }</span>
+
+    @Override
+    public void clear() {
+<span class="nc" id="L315">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L316">        g2d.fillRect(0, 0, this.SCREEN_WIDTH, this.SCREEN_HEIGHT);</span>
+<span class="nc" id="L317">        flush();</span>
+<span class="nc" id="L318">    }</span>
+
+    @Override
+    public int getWidth() {
+<span class="nc" id="L322">        return this.SCREEN_WIDTH;</span>
+    }
+
+    @Override
+    public int getHeight() {
+<span class="nc" id="L327">        return this.SCREEN_HEIGHT;</span>
+    }
+
+    @Override
+    public byte[] getDisplay() {
+<span class="nc" id="L332">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L333">        return null;</span>
+    }
+
+    @Override
+    public byte[] getHWDisplay() {
+<span class="nc" id="L338">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L339">        return null;</span>
+    }
+
+    @Override
+    public void setContrast(int i) {
+<span class="nc" id="L344">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L345">    }</span>
+
+    @Override
+    public void bitBlt(
+        byte[] bytes, int i, int i1, int i2, int i3, int i4, int i5,
+        int i6, int i7, int i8) {
+<span class="nc" id="L351">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L352">    }</span>
+
+    @Override
+    public void bitBlt(
+        byte[] bytes, int i, int i1, int i2, int i3, byte[] bytes1, int i4, int i5,
+        int i6, int i7, int i8, int i9, int i10) {
+<span class="nc" id="L358">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L359">    }</span>
+
+    @Override
+    public void setAutoRefresh(boolean b) {
+<span class="nc" id="L363">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L364">    }</span>
+
+    @Override
+    public int setAutoRefreshPeriod(int i) {
+<span class="nc" id="L368">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L369">        return -1;</span>
+    }
+
+    @Override
+    public void drawOval(int x, int y, int width, int height) {
+<span class="nc" id="L374">        g2d.drawOval(x, y, width, height);</span>
+<span class="nc" id="L375">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

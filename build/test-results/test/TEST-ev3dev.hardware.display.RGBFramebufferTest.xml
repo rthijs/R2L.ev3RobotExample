@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.hardware.display.RGBFramebufferTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:48" hostname="muziektop" time="0.138">
+  <properties/>
+  <testcase name="DoTestInvalidType" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.019"/>
+  <testcase name="DoTestClean" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.037"/>
+  <testcase name="DoTestAdapter" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.008"/>
+  <testcase name="DoTestDraw" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.015"/>
+  <testcase name="DoTestDrawAdapterClosed" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.006"/>
+  <testcase name="DoTestRestore" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.032"/>
+  <testcase name="DoTestDrawDeviceClosed" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.013"/>
+  <testcase name="DoTestDrawBan" classname="ev3dev.hardware.display.RGBFramebufferTest" time="0.006"/>
+  <system-out><![CDATA[2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating BW image 178x128 with stride=23
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x1bpp
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.RGBFramebuffer - Framebuffer is not 32bpp truecolor
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Clearing framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Clearing framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Storing framebuffer snapshot
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Retoring framebuffer snapshot
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] DEBUG e.hardware.display.LinuxFramebuffer - Opened LinuxFB, mode 178x128x32bpp
+2021-08-08 15:40:48 [Test worker] TRACE ev3dev.hardware.display.ImageUtils - creating XRGB image 178x128 with stride=712
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Not drawing frame on framebuffer
+2021-08-08 15:40:48 [Test worker] TRACE e.hardware.display.LinuxFramebuffer - Closing LinuxFB
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

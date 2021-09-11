@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataChannelRereader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">DataChannelRereader.java</span></div><h1>DataChannelRereader.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+/**
+ * Reader of streams that can reread the same channel for structured data of
+ * known length. The focus of this class is on performance.
+ *
+ * @author David Walend
+ */
+public class DataChannelRereader implements Closeable {
+
+    private final Path path;
+    private final ByteBuffer byteBuffer;
+    private final FileChannel channel;
+
+    /**
+     * Create a DataChannelRereader for path with a bufferLength byte buffer
+     *
+     * @param path path to the file to reread
+     * @param bufferLength length of the buffer to hold the structure
+     * @throws IOException when things go wrong
+     */
+<span class="fc" id="L30">    public DataChannelRereader(Path path, int bufferLength) throws IOException {</span>
+<span class="fc" id="L31">        this.path = path;</span>
+<span class="fc" id="L32">        this.byteBuffer = ByteBuffer.allocate(bufferLength);</span>
+<span class="fc" id="L33">        this.channel = FileChannel.open(path);</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * Create a DataChannelRereader for pathString with the default 32-byte buffer.
+     *
+     * @param pathString Path to the file to reread
+     * @throws IOException when things go wrong
+     */
+    public DataChannelRereader(String pathString) throws IOException {
+<span class="fc" id="L43">        this(Paths.get(pathString),32);</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * @return a string made from the bytes in the file;
+     */
+    public String readString() {
+        try {
+            int n;
+            do {
+<span class="fc" id="L53">                byteBuffer.clear();</span>
+<span class="fc" id="L54">                channel.position(0);</span>
+<span class="fc" id="L55">                n = channel.read(byteBuffer);</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">                if (n == -1) {</span>
+<span class="nc" id="L57">                    throw new IOException(&quot;Premature end of file &quot;);</span>
+                }
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">            } while (n &lt;= 0);</span>
+
+<span class="fc" id="L61">            byte[] bytes = byteBuffer.array();</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (bytes[n - 1] == '\n') {</span>
+<span class="fc" id="L63">                return new String(bytes, 0, n - 1, StandardCharsets.UTF_8);</span>
+            } else {
+<span class="fc" id="L65">                return new String(bytes, 0, n, StandardCharsets.UTF_8);</span>
+            }
+<span class="nc" id="L67">        } catch (IOException e) {</span>
+<span class="nc" id="L68">            throw new RuntimeException(&quot;Problem reading path: &quot; + path, e);</span>
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+<span class="fc" id="L74">        channel.close();</span>
+<span class="fc" id="L75">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

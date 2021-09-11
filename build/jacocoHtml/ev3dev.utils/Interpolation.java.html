@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Interpolation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">Interpolation.java</span></div><h1>Interpolation.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+<span class="nc" id="L3">public class Interpolation {</span>
+
+    /**
+     * Method implemented with the ideas from:
+     * http://wwwprof.uniandes.edu.co/~gprieto/classes/compufis/interpolacion.pdf
+     *
+     * @param x parameter
+     * @param x0 parameter
+     * @param x1 parameter
+     * @param y0 parameter
+     * @param y1 parameter
+     * @return result from interpolation
+     */
+    public static float interpolate(
+            float x,
+            float x0,
+            float x1,
+            float y0,
+            float y1) {
+
+<span class="fc" id="L23">        return y0 + ((x - x0) * ((y1 - y0) / (x1 - x0)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

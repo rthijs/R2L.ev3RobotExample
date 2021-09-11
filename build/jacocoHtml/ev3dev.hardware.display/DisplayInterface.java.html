@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DisplayInterface.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">DisplayInterface.java</span></div><h1>DisplayInterface.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import com.sun.jna.LastErrorException;
+import ev3dev.hardware.display.spi.AllImplFailedException;
+import ev3dev.hardware.display.spi.FramebufferProvider;
+import ev3dev.utils.io.NativeFramebuffer;
+import lombok.NonNull;
+
+import java.io.Closeable;
+import java.io.IOException;
+
+/**
+ * &lt;p&gt;Display manager interface.&lt;/p&gt;
+ *
+ * &lt;p&gt;This class provides interface for switching between text and
+ * graphics display modes. It also provides interface for opening
+ * graphics framebuffer. &lt;/p&gt;
+ *
+ * @author Jakub Vaněk
+ * @since 2.4.7
+ */
+<span class="nc" id="L22">public abstract class DisplayInterface implements Closeable {</span>
+<span class="nc" id="L23">    protected JavaFramebuffer fbInstance = null;</span>
+
+    /**
+     * &lt;p&gt;Switch the display to a graphics mode.&lt;/p&gt;
+     *
+     * @throws RuntimeException when the switch fails
+     */
+    public abstract void switchToGraphicsMode();
+
+    /**
+     * &lt;p&gt;Switch the display to a text mode.&lt;/p&gt;
+     *
+     * @throws RuntimeException when the switch fails
+     */
+    public abstract void switchToTextMode();
+
+    /**
+     * &lt;p&gt;Get the framebuffer for the system display.&lt;/p&gt;
+     *
+     * &lt;p&gt;The framebuffer is initialized only once, later calls
+     * return references to the same instance.&lt;/p&gt;
+     *
+     * @return Java framebuffer compatible with the system display.
+     * @throws RuntimeException when switch to graphics mode or the framebuffer initialization fails.
+     */
+    public abstract JavaFramebuffer openFramebuffer();
+
+    /**
+     * &lt;p&gt;Remove all references to this framebuffer.&lt;/p&gt;
+     *
+     * @param fb Framebuffer to remove.
+     */
+    public void releaseFramebuffer(JavaFramebuffer fb) {
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (fb != null &amp;&amp; fb == fbInstance) {</span>
+<span class="nc" id="L57">            fbInstance = null;</span>
+        } else {
+<span class="nc" id="L59">            throw new IllegalArgumentException(&quot;Framebuffer must be non-null and identical to the builtin framebuffer&quot;);</span>
+        }
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * Close the internal framebuffer.
+     */
+    protected void closeFramebuffer() {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (fbInstance != null) {</span>
+            try {
+<span class="nc" id="L69">                fbInstance.close();</span>
+<span class="nc" id="L70">            } catch (IOException | LastErrorException e) {</span>
+<span class="nc" id="L71">                System.err.println(&quot;Error occured during framebuffer shutdown: &quot; + e.getMessage());</span>
+<span class="nc" id="L72">                e.printStackTrace();</span>
+            } finally {
+<span class="nc" id="L74">                fbInstance = null;</span>
+            }
+        }
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Initialize new internal instance of JavaFramebuffer.
+     * @param backend Device behind JavaFramebuffer.
+     * @param enable Whether to enable framebuffer flushing from the beginning.
+     */
+<span class="nc bnc" id="L84" title="All 2 branches missed.">    protected void initializeFramebuffer(@NonNull NativeFramebuffer backend, boolean enable) {</span>
+        try {
+<span class="nc" id="L86">            fbInstance = FramebufferProvider.load(backend, this);</span>
+<span class="nc" id="L87">        } catch (AllImplFailedException e) {</span>
+<span class="nc" id="L88">            throw new RuntimeException(&quot;System framebuffer opening failed&quot;, e);</span>
+<span class="nc" id="L89">        }</span>
+<span class="nc" id="L90">        fbInstance.setFlushEnabled(enable);</span>
+<span class="nc" id="L91">        fbInstance.clear();</span>
+<span class="nc" id="L92">        fbInstance.storeData();</span>
+<span class="nc" id="L93">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

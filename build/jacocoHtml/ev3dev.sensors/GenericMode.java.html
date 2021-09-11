@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GenericMode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors</a> &gt; <span class="el_source">GenericMode.java</span></div><h1>GenericMode.java</h1><pre class="source lang-java linenums">package ev3dev.sensors;
+
+import ev3dev.utils.Sysfs;
+import lejos.hardware.sensor.SensorMode;
+
+import java.io.File;
+
+/**
+ * Generic ev3dev sensor handler.
+ *
+ * &lt;p&gt;Note: data returned by {@link GenericMode#fetchSample(float[], int)}
+ * are valid only when the sensor itself is in the correct mode.
+ * Otherwise, wrong data will be returned.&lt;/p&gt;
+ */
+public class GenericMode implements SensorMode {
+
+    protected final File pathDevice;
+    private final int sampleSize;
+    private final String modeName;
+
+    private final float correctMin;
+    private final float correctMax;
+    private final float correctFactor;
+
+    /**
+     * Create new generic sensor handler.
+     * @param pathDevice Reference to the object responsible for mode setting and value reading.
+     * @param sampleSize Number of returned samples.
+     * @param modeName Human-readable sensor mode name.
+     */
+    public GenericMode(
+            final File pathDevice,
+            final int sampleSize,
+            final String modeName) {
+<span class="fc" id="L35">        this(pathDevice, sampleSize, modeName,</span>
+                Float.MIN_VALUE, Float.MAX_VALUE, 1.0f);
+<span class="fc" id="L37">    }</span>
+
+    /**
+     * Create new generic sensor handler.
+     *
+     * @param pathDevice Reference to the object responsible for mode setting and value reading.
+     * @param sampleSize Number of returned samples.
+     * @param modeName Human-readable sensor mode name.
+     * @param correctMin Minimum value measured by the sensor. If the reading is lower, zero is returned.
+     * @param correctMax Maximum value measured by the sensor. If the reading is higher, positive infinity is returned.
+     * @param correctFactor Scaling factor applied to the sensor reading.
+     */
+    public GenericMode(
+            final File pathDevice,
+            final int sampleSize,
+            final String modeName,
+            final float correctMin,
+            final float correctMax,
+<span class="fc" id="L55">            final float correctFactor) {</span>
+<span class="fc" id="L56">        this.pathDevice = pathDevice;</span>
+<span class="fc" id="L57">        this.sampleSize = sampleSize;</span>
+<span class="fc" id="L58">        this.modeName = modeName;</span>
+<span class="fc" id="L59">        this.correctMin = correctMin;</span>
+<span class="fc" id="L60">        this.correctMax = correctMax;</span>
+<span class="fc" id="L61">        this.correctFactor = correctFactor;</span>
+<span class="fc" id="L62">    }</span>
+
+    @Override
+    public String getName() {
+<span class="fc" id="L66">        return modeName;</span>
+    }
+
+    @Override
+    public int sampleSize() {
+<span class="fc" id="L71">        return sampleSize;</span>
+    }
+
+
+    /**
+     * Fetches a sample from the sensor.
+     *
+     * &lt;p&gt;Note: this function works properly only when
+     * the sensor is already in the appropriate mode. Otherwise,
+     * returned data will be invalid.&lt;/p&gt;
+     *
+     * @param sample The array to store the sample in.
+     * @param offset The elements of the sample are stored in the array starting at the offset position.
+     */
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+
+        // for all values
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        for (int n = 0; n &lt; sampleSize; n++) {</span>
+            // read
+<span class="fc" id="L91">            float reading = Sysfs.readFloat(this.pathDevice + &quot;/&quot; + &quot;value&quot; + n);</span>
+
+            // apply correction
+<span class="fc" id="L94">            reading *= correctFactor;</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            if (reading &lt; correctMin) {</span>
+<span class="fc" id="L96">                reading = 0;</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            } else if (reading &gt;= correctMax) {</span>
+<span class="nc" id="L98">                reading = Float.POSITIVE_INFINITY;</span>
+            }
+
+            // store
+<span class="fc" id="L102">            sample[offset + n] = reading;</span>
+        }
+<span class="fc" id="L104">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

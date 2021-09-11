@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PilotProps.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">PilotProps.java</span></div><h1>PilotProps.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+import ev3dev.actuators.lego.motors.Motor;
+import lejos.robotics.RegulatedMotor;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+/**
+ * Configuration class for Differential Pilot.
+ *
+ * @author Lawrie Griffiths, Juan Antonio Breña Moral
+ */
+<span class="fc" id="L17">public class PilotProps extends Properties {</span>
+
+    public static final String PERSISTENT_FILENAME = &quot;pilot.props&quot;;
+
+    public static final String KEY_WHEELDIAMETER = &quot;wheelDiameter&quot;;
+    public static final String KEY_TRACKWIDTH = &quot;trackWidth&quot;;
+    public static final String KEY_LEFTMOTOR = &quot;leftMotor&quot;;
+    public static final String KEY_RIGHTMOTOR = &quot;rightMotor&quot;;
+    public static final String KEY_REVERSE = &quot;reverse&quot;;
+
+    /**
+     * Method to load values from file
+     *
+     * @throws IOException Not found
+     */
+    public void loadPersistentValues() throws IOException {
+
+<span class="fc" id="L34">        final ClassLoader loader = Thread.currentThread().getContextClassLoader();</span>
+<span class="fc" id="L35">        try (InputStream resourceStream = loader.getResourceAsStream(PERSISTENT_FILENAME)) {</span>
+<span class="fc" id="L36">            this.load(resourceStream);</span>
+        }
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Store values in the file
+     *
+     * @throws IOException Not found
+     */
+    public void storePersistentValues() throws IOException {
+
+<span class="fc" id="L47">        try (FileOutputStream fos = new FileOutputStream(new File(PERSISTENT_FILENAME))) {</span>
+<span class="fc" id="L48">            this.store(fos, null);</span>
+        }
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * Utility method to get Motor instance from string (A, B or C)
+     */
+    public static RegulatedMotor getMotor(String motor) {
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (motor.equals(&quot;A&quot;)) {</span>
+<span class="fc" id="L58">            return Motor.A;</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        } else if (motor.equals(&quot;B&quot;)) {</span>
+<span class="fc" id="L60">            return Motor.B;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        } else if (motor.equals(&quot;C&quot;)) {</span>
+<span class="fc" id="L62">            return Motor.C;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        } else if (motor.equals(&quot;D&quot;)) {</span>
+<span class="fc" id="L64">            return Motor.D;</span>
+        } else {
+            //TODO Review this case.
+<span class="fc" id="L67">            return null;</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EV3ColorSensor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors.ev3</a> &gt; <span class="el_source">EV3ColorSensor.java</span></div><h1>EV3ColorSensor.java</h1><pre class="source lang-java linenums">package ev3dev.sensors.ev3;
+
+import ev3dev.sensors.BaseSensor;
+import ev3dev.sensors.GenericMode;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.Color;
+import lejos.robotics.ColorIdentifier;
+import lejos.robotics.LampController;
+
+
+/**
+ * &lt;b&gt;EV3 color sensors&lt;/b&gt;&lt;br&gt;
+ * The digital EV3 Color Sensor distinguishes between eight different colors.
+ * It also serves as a light sensors by detecting light intensities.
+ *
+ * &lt;p&gt;&lt;b&gt;Sensor configuration&lt;/b&gt;&lt;br&gt;
+ * The flood light of the sensors can be put on or off using the setFloodlight methods.
+ *
+ * &lt;p&gt;See &lt;a href=&quot;http://www.ev-3.net/en/archives/847&quot;&gt; Sensor Product page &lt;/a&gt;
+ * See &lt;a href=&quot;http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/&quot;&gt; The leJOS sensors framework&lt;/a&gt;
+ * See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+ *
+ * @author Andy Shaw
+ * @author Juan Antonio Breña Moral
+ */
+public class EV3ColorSensor extends BaseSensor implements LampController, ColorIdentifier {
+    // TODO: decide what to do to the LampController and ColorIdentifier interfaces
+
+    private static final String LEGO_EV3_COLOR_SENSOR = &quot;lego-ev3-color&quot;;
+
+    private static final String COL_COLOR = &quot;COL-COLOR&quot;; // mode 0; color ID
+    private static final String COL_REFLECT = &quot;COL-REFLECT&quot;;// mode 1; reflected intensity
+    private static final String COL_AMBIENT = &quot;COL-AMBIENT&quot;;// mode 2; scaled ambient intensity
+    private static final String COL_RGBRAW = &quot;RGB-RAW&quot;; // mode 3; raw RGB reflectivity
+    private static final String COL_REFRAW = &quot;REF-RAW&quot;; // not used here; raw red reflectivity / ambient
+    private static final String COL_CAL = &quot;COL-CAL&quot;; // not used here; maybe used for sensor bootstrap in LEGO
+
+    /**
+     * Constructor
+     *
+     * @param portName portName
+     */
+    public EV3ColorSensor(final Port portName) {
+<span class="fc" id="L45">        super(portName, LEGO_UART_SENSOR, LEGO_EV3_COLOR_SENSOR);</span>
+
+<span class="fc" id="L47">        setModes(new SensorMode[]{</span>
+            new GenericMode(this.PATH_DEVICE, 1, &quot;ColorID&quot;),
+            new GenericMode(this.PATH_DEVICE, 1, &quot;Red&quot;),
+            new GenericMode(this.PATH_DEVICE, 1, &quot;Ambient&quot;),
+            new GenericMode(this.PATH_DEVICE, 3, &quot;RGB&quot;)
+        });
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getColorID() {
+<span class="fc" id="L60">        float[] sample = new float[1];</span>
+<span class="fc" id="L61">        getColorIDMode().fetchSample(sample, 0);</span>
+<span class="fc" id="L62">        return (int) sample[0];</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isFloodlightOn() {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        return getFloodlight() != Color.NONE;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getFloodlight() {
+<span class="nc bnc" id="L78" title="All 3 branches missed.">        switch (this.getSystemMode()) {</span>
+            case COL_COLOR:
+            case COL_RGBRAW:
+<span class="nc" id="L81">                return Color.WHITE;</span>
+            case COL_REFRAW:
+            case COL_REFLECT:
+<span class="nc" id="L84">                return Color.RED;</span>
+            case COL_AMBIENT:
+            case COL_CAL:
+            default:
+<span class="nc" id="L88">                return Color.NONE;</span>
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setFloodlight(boolean floodlight) {
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        setFloodlight(floodlight ? Color.RED : Color.BLUE);</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean setFloodlight(int color) {
+        String mode;
+<span class="pc bpc" id="L106" title="2 of 4 branches missed.">        switch (color) {</span>
+            case Color.BLUE:
+<span class="fc" id="L108">                mode = COL_AMBIENT;</span>
+<span class="fc" id="L109">                break;</span>
+            case Color.WHITE:
+<span class="nc" id="L111">                mode = COL_COLOR;</span>
+<span class="nc" id="L112">                break;</span>
+            case Color.RED:
+<span class="fc" id="L114">                mode = COL_REFLECT;</span>
+<span class="fc" id="L115">                break;</span>
+            default:
+                // TODO: Should we ignore a wrong color or throw an exception?
+<span class="nc" id="L118">                throw new IllegalArgumentException(&quot;Invalid color specified&quot;);</span>
+        }
+<span class="fc" id="L120">        switchMode(mode, SWITCH_DELAY);</span>
+<span class="fc" id="L121">        return true;</span>
+    }
+
+    /**
+     * &lt;b&gt;EV3 color sensors, Color ID mode&lt;/b&gt;&lt;br&gt;
+     * Measures the color ID of a surface. The sensors can identify 8 unique colors
+     * (NONE, BLACK, BLUE, GREEN, YELLOW, RED, WHITE, BROWN).
+     *
+     *
+     * &lt;p&gt;&lt;b&gt;Size and content of the sample&lt;/b&gt;&lt;br&gt;
+     * The sample contains one element containing the ID (0-7) of the detected color.
+     *
+     * @return A sampleProvider
+     *     See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     *
+     */
+    public SensorMode getColorIDMode() {
+<span class="fc" id="L138">        switchMode(COL_COLOR, SWITCH_DELAY);</span>
+<span class="fc" id="L139">        return getMode(0);</span>
+    }
+
+    /**
+     * &lt;b&gt;EV3 color sensors, Red mode&lt;/b&gt;&lt;br&gt;
+     * Measures the level of reflected light from the sensors RED LED.
+     *
+     * &lt;p&gt;&lt;b&gt;Size and content of the sample&lt;/b&gt;&lt;br&gt;
+     * The sample contains one element containing the intensity level (Normalized between 0 and 1) of reflected light.
+     *
+     * @return A sampleProvider
+     *     See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     */
+    public SensorMode getRedMode() {
+<span class="fc" id="L153">        switchMode(COL_REFLECT, SWITCH_DELAY);</span>
+<span class="fc" id="L154">        return getMode(1);</span>
+    }
+
+    /**
+     * &lt;b&gt;EV3 color sensors, Ambient mode&lt;/b&gt;&lt;br&gt;
+     * Measures the level of ambient light while the sensors lights are off.
+     *
+     * &lt;p&gt;&lt;b&gt;Size and content of the sample&lt;/b&gt;&lt;br&gt;
+     * The sample contains one element containing the intensity level (Normalized between 0 and 1) of ambient light.
+     *
+     * @return A sampleProvider
+     *     See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     */
+    public SensorMode getAmbientMode() {
+<span class="fc" id="L168">        switchMode(COL_AMBIENT, SWITCH_DELAY);</span>
+<span class="fc" id="L169">        return getMode(2);</span>
+    }
+
+    /**
+     * Get a sample provider that returns the light values (RGB) when illuminated by a
+     * white light source.
+     *
+     * &lt;b&gt;EV3 color sensors, RGB mode&lt;/b&gt;&lt;br&gt;
+     * Measures the level of red, green and blue light when illuminated by a white light source..
+     *
+     * &lt;p&gt;&lt;b&gt;Size and content of the sample&lt;/b&gt;&lt;br&gt;
+     * The sample contains 3 elements containing the intensity level
+     * (Normalized between 0 and 1) of red, green and blue light respectivily.
+     *
+     * @return A sampleProvider
+     *     See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     */
+    public SensorMode getRGBMode() {
+<span class="fc" id="L187">        switchMode(COL_RGBRAW, SWITCH_DELAY);</span>
+<span class="fc" id="L188">        return getMode(3);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

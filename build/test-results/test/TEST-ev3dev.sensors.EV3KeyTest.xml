@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.sensors.EV3KeyTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:37" hostname="muziektop" time="0.536">
+  <properties/>
+  <testcase name="testButtonBits" classname="ev3dev.sensors.EV3KeyTest" time="0.007"/>
+  <testcase name="testKeyListenersAndWaits" classname="ev3dev.sensors.EV3KeyTest" time="0.526"/>
+  <testcase name="testEqualsAndHashCode" classname="ev3dev.sensors.EV3KeyTest" time="0.002"/>
+  <system-out><![CDATA[2021-08-08 15:40:37 [Thread-4] DEBUG ev3dev.hardware.EV3DevDistros - Providing an EV3DevDistros instance
+2021-08-08 15:40:37 [Thread-4] ERROR ev3dev.sensors.EV3Key - Failed to read key press: /dev/input/by-path/platform-gpio_keys-event (Bestand of map bestaat niet)
+2021-08-08 15:40:37 [Test worker] TRACE ev3dev.sensors.EV3Key - KeyType LEFT pressed
+2021-08-08 15:40:37 [Test worker] TRACE ev3dev.sensors.EV3Key - KeyType RIGHT pressed
+2021-08-08 15:40:37 [Test worker] TRACE ev3dev.sensors.EV3Key - KeyType RIGHT released
+2021-08-08 15:40:37 [Test worker] TRACE ev3dev.sensors.EV3Key - KeyType LEFT released
+2021-08-08 15:40:37 [Test worker] TRACE ev3dev.sensors.EV3Key - KeyType ESCAPE pressed
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EV3DevDevice.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware</a> &gt; <span class="el_source">EV3DevDevice.java</span></div><h1>EV3DevDevice.java</h1><pre class="source lang-java linenums">package ev3dev.hardware;
+
+import ev3dev.utils.Sysfs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.List;
+import java.util.Properties;
+
+/**
+ * This class been designed to discover if the library is used in:
+ *
+ * - EV3 Brick
+ * - Raspberry Pi 1 + PiStorms
+ * - Raspberry Pi 1 + BrickPi
+ *
+ *  At the moment, the class extends from Device,
+ *  but close method doesn´t close any real resource.
+ *
+ * @author Juan Antonio Breña Moral
+ *
+ *
+ */
+public abstract class EV3DevDevice {
+
+<span class="fc" id="L27">    private static final Logger LOGGER = LoggerFactory.getLogger(EV3DevDevice.class);</span>
+
+    protected final Properties ev3DevProperties;
+    protected final EV3DevPlatform CURRENT_PLATFORM;
+
+    protected static final String LEGO_PORT = &quot;lego-port&quot;;
+    protected static final String ADDRESS = &quot;address&quot;;
+    protected static final String LEGO_SENSOR = &quot;lego-sensor&quot;;
+    protected static final String MODE = &quot;mode&quot;;
+    protected static final String DEVICE = &quot;set_device&quot;;
+
+<span class="fc" id="L38">    protected File PATH_DEVICE = null;</span>
+
+    /**
+     * Constructor
+     */
+<span class="fc" id="L43">    public EV3DevDevice() {</span>
+
+<span class="fc" id="L45">        final EV3DevPropertyLoader ev3DevPropertyLoader = new EV3DevPropertyLoader();</span>
+<span class="fc" id="L46">        ev3DevProperties = ev3DevPropertyLoader.getEV3DevProperties();</span>
+<span class="fc" id="L47">        final EV3DevPlatforms ev3DevPlatforms = EV3DevPlatforms.getInstance();</span>
+<span class="fc" id="L48">        CURRENT_PLATFORM = ev3DevPlatforms.getPlatform();</span>
+<span class="fc" id="L49">    }</span>
+
+    //TODO Rename method to detect
+
+    /**
+     * This method matches a input with the internal position in EV3Dev.
+     *
+     * @param type     type
+     * @param portName port
+     */
+    protected void detect(final String type, final String portName) {
+<span class="fc" id="L60">        final String devicePath = EV3DevFileSystem.getRootPath() + &quot;/&quot; + type;</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L62">            LOGGER.trace(&quot;Retrieving devices in path: &quot;, devicePath);</span>
+        }
+<span class="fc" id="L64">        final List&lt;File&gt; deviceAvailables = Sysfs.getElements(devicePath);</span>
+<span class="fc" id="L65">        boolean connected = false;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L67">            LOGGER.trace(&quot;Checking devices on: {}&quot;, devicePath);</span>
+        }
+        String pathDeviceName;
+<span class="fc" id="L70">        int deviceCounter = 1;</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        for (File deviceAvailable : deviceAvailables) {</span>
+<span class="fc" id="L72">            PATH_DEVICE = deviceAvailable;</span>
+<span class="fc" id="L73">            pathDeviceName = PATH_DEVICE + &quot;/&quot; + ADDRESS;</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">            if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L75">                LOGGER.trace(&quot;Device {}:&quot;, deviceCounter);</span>
+            }
+<span class="fc" id="L77">            String result = Sysfs.readString(pathDeviceName);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L79">                LOGGER.trace(&quot;Port expected: {}, actual: {}.&quot;, portName, result);</span>
+            }
+            //TODO Review to use equals. It is more strict
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            if (result.contains(portName)) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">                if (LOGGER.isDebugEnabled()) {</span>
+<span class="fc" id="L84">                    LOGGER.debug(&quot;Detected device on path: {}, {}&quot;, pathDeviceName, result);</span>
+                }
+<span class="fc" id="L86">                connected = true;</span>
+<span class="fc" id="L87">                break;</span>
+            } else {
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L90">                    LOGGER.trace(&quot;Skipped device&quot;);</span>
+                }
+            }
+<span class="fc" id="L93">            deviceCounter++;</span>
+<span class="fc" id="L94">        }</span>
+
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (!connected) {</span>
+<span class="nc" id="L97">            throw new RuntimeException(&quot;The device was not detected in: &quot; + portName);</span>
+        }
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Returns the value of an attribute supported for a Device
+     *
+     * @param attribute attribute
+     * @return value
+     */
+    protected String getStringAttribute(final String attribute) {
+<span class="fc" id="L108">        return Sysfs.readString(PATH_DEVICE + &quot;/&quot; + attribute);</span>
+    }
+
+    /**
+     * Returns the value of an attribute supported for a Device
+     *
+     * @param attribute attribute
+     * @return value
+     */
+    protected int getIntegerAttribute(final String attribute) {
+<span class="fc" id="L118">        return Sysfs.readInteger(PATH_DEVICE + &quot;/&quot; + attribute);</span>
+    }
+
+    /**
+     * Set a value on an attribute
+     *
+     * @param attribute attribute
+     * @param value     value
+     */
+    protected void setStringAttribute(final String attribute, final String value) {
+<span class="fc" id="L128">        final boolean result = Sysfs.writeString(this.PATH_DEVICE + &quot;/&quot; + attribute, value);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (!result) {</span>
+<span class="fc" id="L130">            throw new RuntimeException(&quot;Operation not executed: &quot;</span>
+                + this.PATH_DEVICE + &quot;/&quot; + attribute + &quot; with value &quot; + value);
+        }
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Set a value on an attribute
+     *
+     * @param attribute attribute
+     * @param value     value
+     */
+    protected void setIntegerAttribute(final String attribute, final int value) {
+<span class="fc" id="L142">        setStringAttribute(attribute, Integer.toString(value));</span>
+<span class="fc" id="L143">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

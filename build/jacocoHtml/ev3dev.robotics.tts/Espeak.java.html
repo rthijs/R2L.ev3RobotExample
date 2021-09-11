@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Espeak.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.robotics.tts</a> &gt; <span class="el_source">Espeak.java</span></div><h1>Espeak.java</h1><pre class="source lang-java linenums">package ev3dev.robotics.tts;
+
+import ev3dev.utils.Shell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Espeak wrapper
+ */
+<span class="fc" id="L10">public class Espeak {</span>
+
+<span class="fc" id="L12">    private static final Logger log = LoggerFactory.getLogger(Espeak.class);</span>
+
+    private static final String ESPEAK = &quot;espeak&quot;;
+    private static final String CMD_APLAY = &quot;aplay&quot;;
+
+    public static final String VOICE_ENGLISH = &quot;en&quot;;
+    public static final String VOICE_SPANISH = &quot;es&quot;;
+    public static final int DEFAULT_SPEED_READING = 105;
+    public static final int DEFAULT_PITCH = 60;
+
+<span class="fc" id="L22">    private String voice = null;</span>
+<span class="fc" id="L23">    private int volume = -1;</span>
+<span class="fc" id="L24">    private int speedReading = -1;</span>
+<span class="fc" id="L25">    private int pitch = -1;</span>
+<span class="fc" id="L26">    private String message = null;</span>
+<span class="fc" id="L27">    private String filePath = null;</span>
+<span class="fc" id="L28">    private String command = null;</span>
+
+    public void setVoice(final String voice) {
+<span class="fc" id="L31">        this.voice = voice;</span>
+<span class="fc" id="L32">    }</span>
+
+    public void setVolume(final int volume) {
+<span class="fc" id="L35">        this.volume = volume;</span>
+<span class="fc" id="L36">    }</span>
+
+    public void setSpeedReading(final int speed) {
+<span class="fc" id="L39">        this.speedReading = speed;</span>
+<span class="fc" id="L40">    }</span>
+
+    public void setPitch(final int pitch) {
+<span class="fc" id="L43">        this.pitch = pitch;</span>
+<span class="fc" id="L44">    }</span>
+
+    public void setMessage(final String message) {
+<span class="fc" id="L47">        this.message = message;</span>
+<span class="fc" id="L48">    }</span>
+
+    public void setFilePath(final String filePath) {
+<span class="fc" id="L51">        this.filePath = filePath;</span>
+<span class="fc" id="L52">    }</span>
+
+    //TODO Evolve to builder
+    private void build() {
+<span class="fc" id="L56">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L57">        sb.append(ESPEAK);</span>
+<span class="fc" id="L58">        sb.append(&quot; &quot;);</span>
+        //TODO Refactor
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (this.voice != null) {</span>
+<span class="fc" id="L61">            sb.append(&quot; -v &quot;).append(this.voice);</span>
+        } else {
+<span class="nc" id="L63">            sb.append(&quot; -v &quot;).append(Espeak.VOICE_ENGLISH);</span>
+        }
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        if (this.volume != -1) {</span>
+<span class="fc" id="L66">            sb.append(&quot; -a &quot;).append(this.volume);</span>
+        }
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        if (this.speedReading != -1) {</span>
+<span class="fc" id="L69">            sb.append(&quot; -s &quot;).append(this.speedReading);</span>
+        } else {
+<span class="nc" id="L71">            sb.append(&quot; -s &quot;).append(this.DEFAULT_SPEED_READING);</span>
+        }
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (this.pitch != -1) {</span>
+<span class="fc" id="L74">            sb.append(&quot; -p &quot;).append(this.pitch);</span>
+        } else {
+<span class="nc" id="L76">            sb.append(&quot; -p &quot;).append(this.DEFAULT_PITCH);</span>
+        }
+        //TODO Refactor
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (message != null) {</span>
+<span class="fc" id="L80">            sb.append(&quot; --stdout &quot;);</span>
+<span class="fc" id="L81">            sb.append(&quot;\&quot;&quot;).append(this.message).append(&quot;\&quot;&quot;);</span>
+        } else {
+            //TODO Refactor
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            if (filePath != null) {</span>
+<span class="fc" id="L85">                sb.append(&quot;--stdout &quot;);</span>
+<span class="fc" id="L86">                sb.append(&quot; -f &quot;).append(this.filePath).append(&quot;\&quot;&quot;);</span>
+            } else {
+<span class="nc" id="L88">                throw new IllegalArgumentException(&quot;Message is null or FilePath.&quot;);</span>
+            }
+        }
+<span class="fc" id="L91">        sb.append(&quot; | &quot;);</span>
+<span class="fc" id="L92">        sb.append(CMD_APLAY);</span>
+<span class="fc" id="L93">        this.command = sb.toString();</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Execute the TTS
+     *
+     * &lt;p&gt;Examples:
+     * espeak -ves -a 200 -s 200 -p 50  --stdout -f quijote.txt | aplay
+     * espeak -ves --stdout &quot;soy un robot bueno&quot; | aplay
+     */
+    public void say() {
+<span class="fc" id="L104">        this.build();</span>
+<span class="fc" id="L105">        final String program = &quot;/bin/sh&quot;;</span>
+<span class="fc" id="L106">        final String flag = &quot;-c&quot;;</span>
+<span class="fc" id="L107">        final String[] cmd = {program, flag, this.command};</span>
+<span class="fc" id="L108">        log.debug(&quot;Command: {} {} {}&quot;, program, flag, this.command);</span>
+<span class="fc" id="L109">        Shell.execute(cmd);</span>
+<span class="fc" id="L110">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

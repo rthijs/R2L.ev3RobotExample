@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.utils.USBPortTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:45" hostname="muziektop" time="0.025">
+  <properties/>
+  <testcase name="disablePort" classname="ev3dev.utils.USBPortTest" time="0.018"/>
+  <testcase name="enablePort" classname="ev3dev.utils.USBPortTest" time="0.007"/>
+  <system-out><![CDATA[2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - Switching to EV3Dev testing infrastructure
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Removing previous fileSystem infrastructure
+2021-08-08 15:40:45 [Test worker] DEBUG fake_ev3dev.BaseElement - Created Fake file system to implement devices for testing
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Path created: /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - 
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.utils.USBPort - USB Path modified: /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.utils.Shell - Command: echo '1-1' | sudo tee /tmp/ev3dev_fake_system/usb/unbind
+2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - Switching to EV3Dev testing infrastructure
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Removing previous fileSystem infrastructure
+2021-08-08 15:40:45 [Test worker] DEBUG fake_ev3dev.BaseElement - Created Fake file system to implement devices for testing
+2021-08-08 15:40:45 [Test worker] TRACE fake_ev3dev.BaseElement - Path created: /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] INFO  fake_ev3dev.BaseElement - 
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.utils.USBPort - USB Path modified: /tmp/ev3dev_fake_system
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.utils.Shell - Command: echo '1-1' | sudo tee /tmp/ev3dev_fake_system/usb/bind
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

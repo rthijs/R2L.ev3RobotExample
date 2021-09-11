@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeFile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils.io</a> &gt; <span class="el_source">NativeFile.java</span></div><h1>NativeFile.java</h1><pre class="source lang-java linenums">package ev3dev.utils.io;
+
+import com.sun.jna.LastErrorException;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import lombok.NonNull;
+
+import java.io.Closeable;
+import java.nio.ByteBuffer;
+
+/**
+ * &lt;p&gt;This class provides access to Linux files using native I/O operations. It is
+ * implemented using the JNA package. The class is required because certain
+ * operations (like ioctl) that are required by the Lego kernel module interface are
+ * not support by standard Java methods. In addition standard Java memory mapped
+ * files do not seem to function correctly when used with Linux character devices.&lt;/p&gt;
+ *
+ * &lt;p&gt;Only JNA is used, the original interface used combination of Java and JNA.&lt;/p&gt;
+ *
+ * @author andy, Jakub Vaněk
+ */
+public class NativeFile implements Closeable, AutoCloseable {
+<span class="fc" id="L24">    private static int DEFAULT_PRIVS = 0777;</span>
+<span class="pc" id="L25">    protected int fd = -1;</span>
+    private ILibc libc;
+
+    /**
+     * Basic constructor.
+     */
+    protected NativeFile() {
+<span class="nc" id="L32">        this(new NativeLibc());</span>
+<span class="nc" id="L33">    }</span>
+
+    /**
+     * Basic constructor.
+     *
+     * @param libc standard C library interface to be used.
+     */
+<span class="nc bnc" id="L40" title="All 2 branches missed.">    protected NativeFile(@NonNull ILibc libc) {</span>
+<span class="nc" id="L41">        this.libc = libc;</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * Create a NativeFile object and open the associated file/device
+     * for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    public NativeFile(@NonNull String fname, int flags) throws LastErrorException {</span>
+<span class="nc" id="L53">        this(fname, flags, new NativeLibc());</span>
+<span class="nc" id="L54">    }</span>
+
+    /**
+     * Create a NativeFile object and open the associated file/device
+     * for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @param mode  Linux style file access mode
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L65" title="All 2 branches missed.">    public NativeFile(@NonNull String fname, int flags, int mode) throws LastErrorException {</span>
+<span class="nc" id="L66">        this(fname, flags, mode, new NativeLibc());</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Create a NativeFile object and open the associated file/device
+     * for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L78" title="All 4 branches missed.">    public NativeFile(@NonNull String fname, int flags, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="nc" id="L79">        this.libc = libc;</span>
+<span class="nc" id="L80">        open(fname, flags);</span>
+<span class="nc" id="L81">    }</span>
+
+    /**
+     * Create a NativeFile object and open the associated file/device
+     * for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @param mode  Linux style file access mode
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">    public NativeFile(@NonNull String fname, int flags, int mode, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="fc" id="L94">        this.libc = libc;</span>
+<span class="fc" id="L95">        open(fname, flags, mode);</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Check whether this file has been open()en.
+     *
+     * @return True when the filedescriptor is valid.
+     */
+    public boolean isOpen() {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        return fd != -1;</span>
+    }
+
+    /**
+     * Open the specified file/device for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    public void open(@NonNull String fname, int flags) throws LastErrorException {</span>
+<span class="nc" id="L115">        fd = libc.open(fname, flags, DEFAULT_PRIVS);</span>
+<span class="nc" id="L116">    }</span>
+
+    /**
+     * Open the specified file/device for native access.
+     *
+     * @param fname the name of the file to open
+     * @param flags Linux style file access flags
+     * @param mode  Linux style file access mode
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    public void open(@NonNull String fname, int flags, int mode) throws LastErrorException {</span>
+<span class="fc" id="L127">        fd = libc.open(fname, flags, mode);</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Attempt to read the requested number of bytes from the associated file.
+     *
+     * @param buf location to store the read bytes
+     * @param len number of bytes to attempt to read
+     * @return number of bytes read
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L138" title="All 2 branches missed.">    public int read(@NonNull byte[] buf, int len) throws LastErrorException {</span>
+<span class="nc" id="L139">        return libc.read(fd, ByteBuffer.wrap(buf), len);</span>
+    }
+
+    /**
+     * Attempt to write the requested number of bytes to the associated file.
+     *
+     * @param buf    location to store the read bytes
+     * @param offset the offset within buf to take data from for the write
+     * @param len    number of bytes to attempt to read
+     * @return number of bytes read
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    public int write(@NonNull byte[] buf, int offset, int len) throws LastErrorException {</span>
+<span class="nc" id="L152">        return libc.write(fd, ByteBuffer.wrap(buf, offset, len), len);</span>
+    }
+
+    /**
+     * Attempt to read the requested number of byte from the associated file.
+     *
+     * @param buf    location to store the read bytes
+     * @param offset offset with buf to start storing the read bytes
+     * @param len    number of bytes to attempt to read
+     * @return number of bytes read
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L164" title="All 2 branches missed.">    public int read(@NonNull byte[] buf, int offset, int len) throws LastErrorException {</span>
+<span class="nc" id="L165">        return libc.read(fd, ByteBuffer.wrap(buf, offset, len), len);</span>
+    }
+
+    /**
+     * Attempt to write the requested number of bytes to the associated file.
+     *
+     * @param buf location to store the read bytes
+     * @param len number of bytes to attempt to read
+     * @return number of bytes read
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    public int write(@NonNull byte[] buf, int len) throws LastErrorException {</span>
+<span class="nc" id="L177">        return libc.write(fd, ByteBuffer.wrap(buf), len);</span>
+    }
+
+    /**
+     * Perform a Linux style ioctl operation on the associated file.
+     *
+     * @param req  ioctl operation to be performed
+     * @param info output as integer
+     * @return Linux style ioctl return
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    public int ioctl(int req, @NonNull IntByReference info) throws LastErrorException {</span>
+<span class="nc" id="L189">        return libc.ioctl(fd, req, info.getPointer());</span>
+    }
+
+    /**
+     * Perform a Linux style ioctl operation on the associated file.
+     *
+     * @param req  ioctl operation to be performed
+     * @param info input as integer
+     * @return Linux style ioctl return
+     * @throws LastErrorException when operations fails
+     */
+    public int ioctl(int req, int info) throws LastErrorException {
+<span class="nc" id="L201">        return libc.ioctl(fd, req, info);</span>
+    }
+
+    /**
+     * Perform a Linux style ioctl operation on the associated file.
+     *
+     * @param req ioctl operation to be performed
+     * @param buf pointer to ioctl parameters
+     * @return Linux style ioctl return
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    public int ioctl(int req, @NonNull Pointer buf) throws LastErrorException {</span>
+<span class="fc" id="L213">        return libc.ioctl(fd, req, buf);</span>
+    }
+
+    /**
+     * Close the associated file
+     *
+     * @throws LastErrorException when operations fails
+     */
+    @Override
+    public void close() throws LastErrorException {
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        if (fd != -1) {</span>
+<span class="fc" id="L224">            int copy = fd;</span>
+<span class="fc" id="L225">            fd = -1;</span>
+<span class="fc" id="L226">            libc.close(copy);</span>
+        }
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Map a portion of the associated file into memory and return a pointer
+     * that can be used to access that memory.
+     *
+     * @param len   size of the region to map
+     * @param prot  protection for the memory region
+     * @param flags Linux mmap flags
+     * @param off   offset within the file for the start of the region
+     * @return a pointer that can be used to access the mapped data
+     * @throws LastErrorException when operations fails
+     */
+    public Pointer mmap(long len, int prot, int flags, long off) throws LastErrorException {
+<span class="fc" id="L242">        Pointer p = libc.mmap(new Pointer(0), new NativeLong(len), prot, flags, fd, new NativeLong(off));</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (p.equals(new Pointer(-1))) {</span>
+<span class="nc" id="L244">            throw new LastErrorException(&quot;mmap() failed&quot;);</span>
+        }
+<span class="fc" id="L246">        return p;</span>
+    }
+
+    /**
+     * Unmap mapped memory region.
+     *
+     * @param addr Mapped address.
+     * @param len  Region length.
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">    public void munmap(@NonNull Pointer addr, long len) throws LastErrorException {</span>
+<span class="fc" id="L257">        libc.munmap(addr, new NativeLong(len));</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Synchronize mapped memory region.
+     *
+     * @param addr  Mapped address.
+     * @param len   Region length.
+     * @param flags Synchronization flags
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">    public void msync(@NonNull Pointer addr, long len, int flags) throws LastErrorException {</span>
+<span class="fc" id="L269">        libc.msync(addr, new NativeLong(len), flags);</span>
+<span class="fc" id="L270">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

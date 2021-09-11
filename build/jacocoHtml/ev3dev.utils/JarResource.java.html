@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JarResource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">JarResource.java</span></div><h1>JarResource.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+import org.slf4j.Logger;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+<span class="nc" id="L16">public class JarResource {</span>
+    public static final String JAVA_DUKE_IMAGE_NAME = &quot;java_logo.png&quot;;
+<span class="fc" id="L18">    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Shell.class);</span>
+
+    /**
+     * Obtain a stream to a resource embedded into this Jar.
+     *
+     * @param resourceName &quot;Sound.wav&quot;
+     * @return Stream containing the resource.
+     */
+    public static InputStream stream(final String resourceName) {
+<span class="fc" id="L27">        InputStream stream = JarResource.class.getResourceAsStream(&quot;/&quot; + resourceName);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (stream == null) {</span>
+<span class="fc" id="L29">            log.error(&quot;Cannot get resource \&quot;&quot; + resourceName + &quot;\&quot; from Jar file.&quot;);</span>
+<span class="fc" id="L30">            throw new IllegalArgumentException(&quot;Cannot get resource \&quot;&quot; + resourceName + &quot;\&quot; from Jar file.&quot;);</span>
+        }
+<span class="fc" id="L32">        return stream;</span>
+    }
+
+    /**
+     * Obtain an image stored as a resource embedded into this Jar.
+     *
+     * @param resourceName &quot;logo.png&quot;
+     * @return Loaded image.
+     */
+    public static BufferedImage loadImage(final String resourceName) throws IOException {
+<span class="fc" id="L42">        try (InputStream stream = stream(resourceName)) {</span>
+<span class="fc" id="L43">            return ImageIO.read(stream);</span>
+        }
+    }
+
+    /**
+     * Read a resource embedded into this Jar.
+     *
+     * @param resourceName &quot;Sound.wav&quot;
+     * @return Byte array containing the resource.
+     */
+    public static byte[] read(final String resourceName) {
+        int readBytes;
+<span class="fc" id="L55">        byte[] buffer = new byte[4096];</span>
+<span class="fc" id="L56">        try (InputStream is = stream(resourceName);</span>
+<span class="fc" id="L57">             ByteArrayOutputStream os = new ByteArrayOutputStream()) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            while ((readBytes = is.read(buffer)) &gt; 0) {</span>
+<span class="fc" id="L59">                os.write(buffer, 0, readBytes);</span>
+            }
+<span class="fc" id="L61">            return os.toByteArray();</span>
+<span class="nc" id="L62">        } catch (IOException e) {</span>
+<span class="nc" id="L63">            throw new IllegalArgumentException(&quot;Cannot load resource&quot;, e);</span>
+        }
+    }
+
+    /**
+     * Export a resource embedded into a Jar file to the local file path.
+     *
+     * @param resourceName &quot;Sound.wav&quot;
+     * @return The path to the exported resource
+     * @throws Exception When URI parsing fails or IO exception happens
+     */
+    public static String export(final String resourceName) throws IOException {
+        String jarFolder;
+        try {
+<span class="fc" id="L77">            jarFolder = new File(JarResource.class.getProtectionDomain()</span>
+<span class="fc" id="L78">                    .getCodeSource().getLocation().toURI().getPath())</span>
+<span class="fc" id="L79">                    .getParentFile().getPath().replace('\\', '/');</span>
+<span class="nc" id="L80">        } catch (Exception e) {</span>
+<span class="nc" id="L81">            throw new RuntimeException(&quot;Cannot parse JAR folder&quot;, e);</span>
+<span class="fc" id="L82">        }</span>
+<span class="fc" id="L83">        String filename = jarFolder + &quot;/&quot; + resourceName;</span>
+        int readBytes;
+<span class="fc" id="L85">        byte[] buffer = new byte[4096];</span>
+<span class="fc" id="L86">        try (InputStream is = stream(resourceName);</span>
+<span class="fc" id="L87">             OutputStream os = new FileOutputStream(filename)) {</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            while ((readBytes = is.read(buffer)) &gt; 0) {</span>
+<span class="fc" id="L89">                os.write(buffer, 0, readBytes);</span>
+            }
+        }
+
+<span class="fc" id="L93">        return filename;</span>
+    }
+
+    /**
+     * Delete a Jar file
+     *
+     * @param resourceName Name of Jar
+     */
+    public static void delete(final String resourceName) {
+        try {
+<span class="fc" id="L103">            Files.delete(Paths.get(resourceName));</span>
+<span class="fc" id="L104">            log.info(&quot;File deleted!&quot;);</span>
+<span class="fc" id="L105">        } catch (IOException e) {</span>
+<span class="fc" id="L106">            log.warn(&quot;Delete operation is failed. {}&quot;, e.getLocalizedMessage());</span>
+<span class="fc" id="L107">        }</span>
+<span class="fc" id="L108">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

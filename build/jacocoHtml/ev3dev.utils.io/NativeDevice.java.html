@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeDevice.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils.io</a> &gt; <span class="el_source">NativeDevice.java</span></div><h1>NativeDevice.java</h1><pre class="source lang-java linenums">package ev3dev.utils.io;
+
+import com.sun.jna.LastErrorException;
+import com.sun.jna.Pointer;
+import lombok.NonNull;
+
+import static ev3dev.utils.io.NativeConstants.MAP_SHARED;
+import static ev3dev.utils.io.NativeConstants.O_RDWR;
+import static ev3dev.utils.io.NativeConstants.PROT_READ;
+import static ev3dev.utils.io.NativeConstants.PROT_WRITE;
+
+/**
+ * &lt;p&gt;This class provides access from Java to Linux character devices. It is intended
+ * to allow access from Java to the Lego kernel modules which provide access to
+ * EV3 hardware features.&lt;/p&gt;
+ *
+ * @author andy, Jakub Vaněk
+ */
+public class NativeDevice extends NativeFile {
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     */
+<span class="nc bnc" id="L25" title="All 2 branches missed.">    public NativeDevice(@NonNull String dname) throws LastErrorException {</span>
+<span class="nc" id="L26">        super(dname, O_RDWR, 0);</span>
+<span class="nc" id="L27">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param flags opening flags of the device - read, write or both
+     * @param dname name of the character device
+     */
+<span class="nc bnc" id="L35" title="All 2 branches missed.">    public NativeDevice(@NonNull String dname, int flags) throws LastErrorException {</span>
+<span class="nc" id="L36">        super(dname, flags);</span>
+<span class="nc" id="L37">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     * @param libc  standard C library interface to be used.
+     */
+<span class="pc bpc" id="L45" title="2 of 4 branches missed.">    public NativeDevice(@NonNull String dname, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="fc" id="L46">        super(dname, O_RDWR, 0, libc);</span>
+<span class="fc" id="L47">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param flags opening flags of the device - read, write or both
+     * @param dname name of the character device
+     * @param libc  standard C library interface to be used.
+     */
+<span class="nc bnc" id="L56" title="All 4 branches missed.">    public NativeDevice(@NonNull String dname, int flags, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="nc" id="L57">        super(dname, flags, libc);</span>
+<span class="nc" id="L58">    }</span>
+
+    /**
+     * Map a portion of the device into memory and return a pointer which can be
+     * used to read/write the device.
+     *
+     * @param len number of bytes to map
+     * @return a pointer that can be used to access the device memory
+     */
+    public Pointer mmap(long len) throws LastErrorException {
+<span class="fc" id="L68">        return super.mmap(len, PROT_READ | PROT_WRITE, MAP_SHARED, 0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

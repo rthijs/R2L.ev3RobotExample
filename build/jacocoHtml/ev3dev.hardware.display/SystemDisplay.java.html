@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemDisplay.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">SystemDisplay.java</span></div><h1>SystemDisplay.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import com.sun.jna.LastErrorException;
+import ev3dev.utils.io.ILibc;
+import ev3dev.utils.io.NativeConstants;
+import ev3dev.utils.io.NativeLibc;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Helper class for initializing real on-brick display.
+ *
+ * @author Jakub Vaněk
+ * @since 2.4.7
+ */
+<span class="nc" id="L15">@Slf4j</span>
+public final class SystemDisplay {
+
+    private SystemDisplay() {
+    }
+
+    /**
+     * &lt;p&gt;Initialize real on-brick display.&lt;/p&gt;
+     * &lt;p&gt;&lt;b&gt;BEWARE:&lt;/b&gt; this function may be called only once,
+     * otherwise the behavior is undefined.&lt;/p&gt;
+     *
+     * @return new instance of display appropriate for the current session
+     * @throws RuntimeException initialization of the display fails
+     */
+    public static DisplayInterface initializeRealDisplay() {
+<span class="nc" id="L30">        ILibc libc = new NativeLibc();</span>
+
+<span class="nc" id="L32">        LOGGER.debug(&quot;initializing new real display&quot;);</span>
+        try {
+<span class="nc" id="L34">            return new OwnedDisplay(libc);</span>
+<span class="nc" id="L35">        } catch (LastErrorException e) {</span>
+<span class="nc" id="L36">            int errno = e.getErrorCode();</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">            if (errno == NativeConstants.ENOTTY || errno == NativeConstants.ENXIO) {</span>
+<span class="nc" id="L38">                LOGGER.debug(&quot;real display init failed, &quot;</span>
+                    + &quot;but it was caused by not having a real TTY, using fake console&quot;);
+                // we do not run from Brickman
+<span class="nc" id="L41">                return new StolenDisplay(libc);</span>
+            } else {
+<span class="nc" id="L43">                throw e;</span>
+            }
+        }
+    }
+
+    /**
+     * &lt;p&gt;Initialize real on-brick display with framebuffer.&lt;/p&gt;
+     * &lt;p&gt;&lt;b&gt;BEWARE:&lt;/b&gt; this function may be called only once,
+     * otherwise the behavior is undefined.&lt;/p&gt;
+     *
+     * @return new instance of framebuffer appropriate for the current session
+     * @throws RuntimeException initialization of the display or framebuffer fails
+     */
+    public static JavaFramebuffer initializeRealFramebuffer() {
+<span class="nc" id="L57">        return initializeRealDisplay().openFramebuffer();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LCDStretch.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators</a> &gt; <span class="el_source">LCDStretch.java</span></div><h1>LCDStretch.java</h1><pre class="source lang-java linenums">package ev3dev.actuators;
+
+import ev3dev.hardware.EV3DevDevice;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.hardware.display.ImageUtils;
+import ev3dev.hardware.display.JavaFramebuffer;
+import ev3dev.hardware.display.SystemDisplay;
+import lejos.hardware.lcd.GraphicsLCD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * Lejos LCD reimplementation using Java2D API
+ */
+public class LCDStretch extends EV3DevDevice implements GraphicsLCD {
+
+    // custom config
+    public static final String EV3DEV_LCD_KEY = &quot;EV3DEV_LCD_KEY&quot;;
+    public static final String EV3DEV_LCD_DEFAULT = &quot;/dev/fb0&quot;;
+    public static final String EV3DEV_LCD_MODE_KEY = &quot;EV3DEV_LCD_MODE_KEY&quot;;
+
+    // logger
+<span class="nc" id="L39">    private static final Logger log = LoggerFactory.getLogger(LCDStretch.class);</span>
+
+    // drawable
+    private JavaFramebuffer fb;
+    private BufferedImage image;
+    private Graphics2D g2d;
+
+    // autorefresh
+    private Timer timer;
+<span class="nc" id="L48">    private boolean timer_run = false;</span>
+<span class="nc" id="L49">    private int timer_msec = 0;</span>
+
+    // stroke
+    private int stroke;
+
+    private static LCDStretch instance;
+
+    /**
+     * Singleton constructor
+     *
+     * @return GraphicsLCD
+     */
+    public static GraphicsLCD getInstance() {
+        //TODO Refactor
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L64">            instance = new LCDStretch();</span>
+        }
+<span class="nc" id="L66">        return instance;</span>
+    }
+
+    // Prevent duplicate objects
+<span class="nc" id="L70">    private LCDStretch() {</span>
+
+<span class="nc" id="L72">        log.info(&quot;Instancing LCD for Stretch&quot;);</span>
+
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (!CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="nc" id="L75">            log.error(&quot;This actuator was only tested for: {}&quot;, EV3DevPlatform.EV3BRICK);</span>
+<span class="nc" id="L76">            throw new RuntimeException(&quot;This actuator was only tested for: &quot; + EV3DevPlatform.EV3BRICK);</span>
+        }
+
+<span class="nc" id="L79">        this.fb = SystemDisplay.initializeRealFramebuffer();</span>
+<span class="nc" id="L80">        this.timer = new Timer(&quot;LCD flusher&quot;, true);</span>
+<span class="nc" id="L81">        this.image = fb.createCompatibleBuffer();</span>
+<span class="nc" id="L82">        this.g2d = this.image.createGraphics();</span>
+<span class="nc" id="L83">        this.clear();</span>
+<span class="nc" id="L84">    }</span>
+
+    public JavaFramebuffer getFramebuffer() {
+<span class="nc" id="L87">        return fb;</span>
+    }
+
+    //Graphics LCD
+
+    /**
+     * Write LCD with current context
+     */
+    public void flush() {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (log.isTraceEnabled()) {</span>
+<span class="nc" id="L97">            log.trace(&quot;flushing framebuffer&quot;);</span>
+        }
+
+<span class="nc" id="L100">        fb.flushScreen(image);</span>
+<span class="nc" id="L101">    }</span>
+
+    @Override
+    public void translate(int x, int y) {
+<span class="nc" id="L105">        g2d.translate(x, y);</span>
+<span class="nc" id="L106">    }</span>
+
+    @Override
+    public Font getFont() {
+<span class="nc" id="L110">        return g2d.getFont();</span>
+    }
+
+    @Override
+    public void setFont(Font font) {
+<span class="nc" id="L115">        g2d.setFont(font);</span>
+<span class="nc" id="L116">    }</span>
+
+    @Override
+    public int getTranslateX() {
+<span class="nc" id="L120">        return (int) g2d.getTransform().getTranslateX();</span>
+    }
+
+    @Override
+    public int getTranslateY() {
+<span class="nc" id="L125">        return (int) g2d.getTransform().getTranslateY();</span>
+    }
+
+    /**
+     * Set RGB value
+     *
+     * @param rgb rgb
+     */
+    @Override
+    public void setColor(int rgb) {
+<span class="nc" id="L135">        g2d.setColor(new Color(rgb));</span>
+<span class="nc" id="L136">    }</span>
+
+    @Override
+    public void setColor(int r, int g, int b) {
+<span class="nc" id="L140">        g2d.setColor(new Color(r, g, b));</span>
+<span class="nc" id="L141">    }</span>
+
+    @Override
+    public void setPixel(int x, int y, int color) {
+<span class="nc" id="L145">        Point2D.Float in = new Point2D.Float(x, y);</span>
+<span class="nc" id="L146">        Point2D.Float dst = new Point2D.Float();</span>
+<span class="nc" id="L147">        g2d.getTransform().transform(in, dst);</span>
+
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        Color fill = color == 0 ? Color.WHITE : Color.BLACK;</span>
+
+<span class="nc" id="L151">        image.setRGB((int) dst.x, (int) dst.y, fill.getRGB());</span>
+<span class="nc" id="L152">    }</span>
+
+    @Override
+    public int getPixel(int x, int y) {
+<span class="nc" id="L156">        Point2D.Float in = new Point2D.Float(x, y);</span>
+<span class="nc" id="L157">        Point2D.Float dst = new Point2D.Float();</span>
+<span class="nc" id="L158">        g2d.getTransform().transform(in, dst);</span>
+
+<span class="nc" id="L160">        int rgb = image.getRGB((int) dst.x, (int) dst.y);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if ((rgb &amp; 0x00FFFFFF) == 0x00FFFFFF) {</span>
+<span class="nc" id="L162">            return 0;</span>
+        } else {
+<span class="nc" id="L164">            return 1;</span>
+        }
+    }
+
+    @Override
+    public void drawString(String str, int x, int y, int anchor, boolean inverted) {
+<span class="nc" id="L170">        Color oldFg = g2d.getColor();</span>
+<span class="nc" id="L171">        Color oldBg = g2d.getBackground();</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        g2d.setColor(inverted ? Color.WHITE : Color.BLACK);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        g2d.setBackground(inverted ? Color.BLACK : Color.WHITE);</span>
+
+<span class="nc" id="L175">        drawString(str, x, y, anchor);</span>
+
+<span class="nc" id="L177">        g2d.setColor(oldFg);</span>
+<span class="nc" id="L178">        g2d.setBackground(oldBg);</span>
+<span class="nc" id="L179">    }</span>
+
+    @Override
+    public void drawString(String str, int x, int y, int anchor) {
+<span class="nc" id="L183">        FontMetrics metrics = g2d.getFontMetrics();</span>
+<span class="nc" id="L184">        int w = metrics.stringWidth(str);</span>
+<span class="nc" id="L185">        int h = metrics.getHeight();</span>
+<span class="nc" id="L186">        x = adjustX(x, w, anchor);</span>
+<span class="nc" id="L187">        y = adjustY(y, h, anchor);</span>
+
+<span class="nc" id="L189">        g2d.drawString(str, x, y);</span>
+<span class="nc" id="L190">    }</span>
+
+    @Override
+    public void drawSubstring(String str, int offset, int len,
+                              int x, int y, int anchor) {
+<span class="nc" id="L195">        String sub = str.substring(offset, offset + len);</span>
+<span class="nc" id="L196">        drawString(sub, x, y, anchor);</span>
+<span class="nc" id="L197">    }</span>
+
+    @Override
+    public void drawChar(char character, int x, int y, int anchor) {
+<span class="nc" id="L201">        String str = new String(new char[]{character});</span>
+<span class="nc" id="L202">        drawString(str, x, y, anchor);</span>
+<span class="nc" id="L203">    }</span>
+
+    @Override
+    public void drawChars(char[] data, int offset, int length,
+                          int x, int y, int anchor) {
+<span class="nc" id="L208">        String str = new String(data);</span>
+<span class="nc" id="L209">        drawString(str, x, y, anchor);</span>
+<span class="nc" id="L210">    }</span>
+
+    @Override
+    public int getStrokeStyle() {
+<span class="nc" id="L214">        return this.stroke;</span>
+    }
+
+    @Override
+    public void setStrokeStyle(int i) {
+<span class="nc" id="L219">        this.stroke = i;</span>
+        Stroke stroke;
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (i == DOTTED) {</span>
+<span class="nc" id="L222">            float[] dash = new float[]{3.0f, 3.0f};</span>
+<span class="nc" id="L223">            float dash_phase = 0.0f;</span>
+<span class="nc" id="L224">            stroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, dash, dash_phase);</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        } else if (i == SOLID) {</span>
+<span class="nc" id="L226">            stroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f);</span>
+        } else {
+<span class="nc" id="L228">            throw new IllegalArgumentException(&quot;Invalid stroke&quot;);</span>
+        }
+<span class="nc" id="L230">        g2d.setStroke(stroke);</span>
+<span class="nc" id="L231">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegionRop(Image src, int sx, int sy, int w, int h, int x, int y, int anchor, int rop) {
+<span class="nc" id="L236">        drawRegionRop(src, sx, sy, w, h, x, y, TRANS_NONE, anchor, rop);</span>
+<span class="nc" id="L237">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegionRop(
+        Image src, int sx, int sy, int w, int h, int transform, int x, int y, int anchor, int rop) {
+<span class="nc" id="L243">        x = adjustX(x, w, anchor);</span>
+<span class="nc" id="L244">        y = adjustY(y, h, anchor);</span>
+<span class="nc" id="L245">        BufferedImage srcI = any2rgb(src);</span>
+
+<span class="nc" id="L247">        double midx = srcI.getWidth() / 2.0;</span>
+<span class="nc" id="L248">        double midy = srcI.getHeight() / 2.0;</span>
+<span class="nc" id="L249">        AffineTransform tf = new AffineTransform();</span>
+<span class="nc" id="L250">        tf.translate(midx, midy);</span>
+<span class="nc" id="L251">        int h0 = h;</span>
+<span class="nc bnc" id="L252" title="All 9 branches missed.">        switch (transform) {</span>
+            case TRANS_MIRROR:
+<span class="nc" id="L254">                tf.scale(-1.0, 1.0);</span>
+<span class="nc" id="L255">                break;</span>
+            case TRANS_MIRROR_ROT90:
+<span class="nc" id="L257">                tf.scale(-1.0, 1.0);</span>
+<span class="nc" id="L258">                tf.quadrantRotate(1);</span>
+<span class="nc" id="L259">                h = w;</span>
+<span class="nc" id="L260">                w = h0;</span>
+<span class="nc" id="L261">                break;</span>
+            case TRANS_MIRROR_ROT180:
+<span class="nc" id="L263">                tf.scale(-1.0, 1.0);</span>
+<span class="nc" id="L264">                tf.quadrantRotate(2);</span>
+<span class="nc" id="L265">                break;</span>
+            case TRANS_MIRROR_ROT270:
+<span class="nc" id="L267">                tf.scale(-1.0, 1.0);</span>
+<span class="nc" id="L268">                tf.quadrantRotate(3);</span>
+<span class="nc" id="L269">                h = w;</span>
+<span class="nc" id="L270">                w = h0;</span>
+<span class="nc" id="L271">                break;</span>
+            case TRANS_NONE:
+<span class="nc" id="L273">                break;</span>
+            case TRANS_ROT90:
+<span class="nc" id="L275">                tf.quadrantRotate(1);</span>
+<span class="nc" id="L276">                h = w;</span>
+<span class="nc" id="L277">                w = h0;</span>
+<span class="nc" id="L278">                break;</span>
+            case TRANS_ROT180:
+<span class="nc" id="L280">                tf.quadrantRotate(2);</span>
+<span class="nc" id="L281">                break;</span>
+            case TRANS_ROT270:
+<span class="nc" id="L283">                tf.quadrantRotate(3);</span>
+<span class="nc" id="L284">                h = w;</span>
+<span class="nc" id="L285">                w = h0;</span>
+<span class="nc" id="L286">                break;</span>
+            default:
+<span class="nc" id="L288">                throw new RuntimeException(&quot;Bad Option&quot;);</span>
+        }
+<span class="nc" id="L290">        tf.translate(-midx, -midy);</span>
+<span class="nc" id="L291">        AffineTransformOp op = new AffineTransformOp(tf, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);</span>
+<span class="nc" id="L292">        BufferedImage transformed = ImageUtils.createXRGBImage(w, h);</span>
+<span class="nc" id="L293">        transformed = op.filter(srcI, transformed);</span>
+
+<span class="nc" id="L295">        BufferedImage dstI = any2rgb(image);</span>
+<span class="nc" id="L296">        bitBlt(srcI, sx, sy, dstI, x, y, w, h, rop);</span>
+<span class="nc" id="L297">        g2d.drawImage(dstI, 0, 0, null);</span>
+<span class="nc" id="L298">    }</span>
+
+    @Deprecated
+    @Override
+    public void drawRegion(Image src,
+                           int sx, int sy,
+                           int w, int h,
+                           int transform,
+                           int x, int y,
+                           int anchor) {
+<span class="nc" id="L308">        drawRegionRop(src, sx, sy, w, h, transform, x, y, anchor, ROP_COPY);</span>
+<span class="nc" id="L309">    }</span>
+
+    @Override
+    public void drawImage(Image image, int i, int i1, int i2) {
+<span class="nc" id="L313">        g2d.drawImage(image, i, i1, null);</span>
+<span class="nc" id="L314">    }</span>
+
+    @Override
+    public void drawLine(int x1, int y1, int x2, int y2) {
+<span class="nc" id="L318">        g2d.drawLine(x1, y1, x2, y2);</span>
+<span class="nc" id="L319">    }</span>
+
+    @Override
+    public void fillRect(int x, int y, int width, int height) {
+<span class="nc" id="L323">        g2d.fillRect(x, y, width, height);</span>
+<span class="nc" id="L324">    }</span>
+
+    @Override
+    public void copyArea(int sx, int sy,
+                         int w, int h,
+                         int x, int y, int anchor) {
+<span class="nc" id="L330">        x = adjustX(x, w, anchor);</span>
+<span class="nc" id="L331">        y = adjustY(y, h, anchor);</span>
+<span class="nc" id="L332">        g2d.copyArea(sx, sy, w, h, x, y);</span>
+<span class="nc" id="L333">    }</span>
+
+    /**
+     * Adjust the x co-ordinate to use the translation and anchor values.
+     */
+    private int adjustX(int x, int w, int anchor) {
+<span class="nc bnc" id="L339" title="All 4 branches missed.">        switch (anchor &amp; (LEFT | RIGHT | HCENTER)) {</span>
+            case LEFT:
+<span class="nc" id="L341">                break;</span>
+            case RIGHT:
+<span class="nc" id="L343">                x -= w;</span>
+<span class="nc" id="L344">                break;</span>
+            case HCENTER:
+<span class="nc" id="L346">                x -= w / 2;</span>
+<span class="nc" id="L347">                break;</span>
+            default:
+<span class="nc" id="L349">                throw new RuntimeException(&quot;Bad Option&quot;);</span>
+        }
+<span class="nc" id="L351">        return x;</span>
+    }
+
+    /**
+     * Adjust the y co-ordinate to use the translation and anchor values.
+     */
+    private int adjustY(int y, int h, int anchor) {
+<span class="nc bnc" id="L358" title="All 4 branches missed.">        switch (anchor &amp; (TOP | BOTTOM | VCENTER)) {</span>
+            case TOP:
+<span class="nc" id="L360">                break;</span>
+            case BOTTOM:
+<span class="nc" id="L362">                y -= h;</span>
+<span class="nc" id="L363">                break;</span>
+            case VCENTER:
+<span class="nc" id="L365">                y -= h / 2;</span>
+<span class="nc" id="L366">                break;</span>
+            default:
+<span class="nc" id="L368">                throw new RuntimeException(&quot;Bad Option&quot;);</span>
+        }
+<span class="nc" id="L370">        return y;</span>
+    }
+
+    @Override
+    public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+<span class="nc" id="L375">        g2d.drawRoundRect(x, y, width, height, arcWidth, arcHeight);</span>
+<span class="nc" id="L376">    }</span>
+
+    // CommonLCD
+
+    @Override
+    public void drawRect(int x, int y, int width, int height) {
+<span class="nc" id="L382">        g2d.drawRect(x, y, width, height);</span>
+<span class="nc" id="L383">    }</span>
+
+    @Override
+    public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+<span class="nc" id="L387">        g2d.drawArc(x, y, width, height, startAngle, arcAngle);</span>
+<span class="nc" id="L388">    }</span>
+
+    @Override
+    public void fillArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+<span class="nc" id="L392">        g2d.fillArc(x, y, width, height, startAngle, arcAngle);</span>
+<span class="nc" id="L393">    }</span>
+
+    @Override
+    public void refresh() {
+<span class="nc" id="L397">        flush();</span>
+<span class="nc" id="L398">    }</span>
+
+    @Override
+    public void clear() {
+<span class="nc" id="L402">        AffineTransform tf = (AffineTransform) g2d.getTransform().clone();</span>
+<span class="nc" id="L403">        g2d.getTransform().setToIdentity();</span>
+<span class="nc" id="L404">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L405">        g2d.fillRect(0, 0, fb.getWidth(), fb.getHeight());</span>
+<span class="nc" id="L406">        flush();</span>
+<span class="nc" id="L407">        g2d.setTransform(tf);</span>
+<span class="nc" id="L408">    }</span>
+
+    @Override
+    public int getWidth() {
+<span class="nc" id="L412">        return fb.getWidth();</span>
+    }
+
+    @Override
+    public int getHeight() {
+<span class="nc" id="L417">        return fb.getHeight();</span>
+    }
+
+    @Override
+    public byte[] getDisplay() {
+<span class="nc" id="L422">        return ImageUtils.getImageBytes(image);</span>
+    }
+
+
+    @Override
+    public byte[] getHWDisplay() {
+<span class="nc" id="L428">        return getDisplay();</span>
+    }
+
+    @Override
+    public void setContrast(int i) {
+        // not implemented even on leJOS
+<span class="nc" id="L434">        log.debug(&quot;Feature not implemented&quot;);</span>
+<span class="nc" id="L435">    }</span>
+
+    /**
+     * Convert from leJOS image format to Java image
+     */
+    private BufferedImage lejos2rgb(byte[] src, int width, int height) {
+        @SuppressWarnings(&quot;SuspiciousNameCombination&quot;)
+<span class="nc" id="L442">        BufferedImage in = ImageUtils.createBWImage(height, width, true, src);</span>
+<span class="nc" id="L443">        BufferedImage out = ImageUtils.createXRGBImage(width, height);</span>
+<span class="nc" id="L444">        return java_lejos_flip(in, out);</span>
+    }
+
+    private BufferedImage any2rgb(Image img) {
+<span class="nc" id="L448">        BufferedImage copy = ImageUtils.createXRGBImage(img.getWidth(null), img.getHeight(null));</span>
+<span class="nc" id="L449">        Graphics2D gfx = (Graphics2D) copy.getGraphics();</span>
+<span class="nc" id="L450">        gfx.drawImage(img, 0, 0, null);</span>
+<span class="nc" id="L451">        gfx.dispose();</span>
+<span class="nc" id="L452">        return copy;</span>
+    }
+
+    /**
+     * Convert from Java image to leJOS image format
+     */
+    private byte[] any2lejos(BufferedImage img) {
+<span class="nc" id="L459">        BufferedImage out = ImageUtils.createBWImage(img.getHeight(), img.getWidth(), true);</span>
+<span class="nc" id="L460">        BufferedImage right = java_lejos_flip(img, out);</span>
+<span class="nc" id="L461">        return ((DataBufferByte) right.getRaster().getDataBuffer()).getData();</span>
+    }
+
+    private BufferedImage java_lejos_flip(BufferedImage in, BufferedImage out) {
+<span class="nc" id="L465">        AffineTransform tf = new AffineTransform();</span>
+<span class="nc" id="L466">        tf.quadrantRotate(1);</span>
+<span class="nc" id="L467">        tf.scale(-1.0, +1.0);</span>
+<span class="nc" id="L468">        AffineTransformOp op = new AffineTransformOp(tf, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);</span>
+<span class="nc" id="L469">        return op.filter(in, out);</span>
+    }
+
+    /**
+     * Slow emulation of leJOS bitBlt()
+     */
+    @Override
+    public void bitBlt(byte[] src, int sw, int sh, int sx, int sy, int dx, int dy, int w, int h, int rop) {
+<span class="nc" id="L477">        BufferedImage srcI = lejos2rgb(src, sw, sh);</span>
+<span class="nc" id="L478">        BufferedImage dstI = any2rgb(image);</span>
+<span class="nc" id="L479">        bitBlt(srcI, sx, sy, dstI, dx, dy, w, h, rop);</span>
+<span class="nc" id="L480">        g2d.drawImage(dstI, 0, 0, null);</span>
+<span class="nc" id="L481">    }</span>
+
+    /**
+     * Slow emulation of leJOS bitBlt()
+     */
+    @Override
+    public void bitBlt(
+        byte[] src, int sw, int sh, int sx, int sy, byte[] dst, int dw, int dh, int dx, int dy, int w, int h, int rop) {
+<span class="nc" id="L489">        BufferedImage srcI = lejos2rgb(src, sw, sh);</span>
+<span class="nc" id="L490">        BufferedImage dstI = lejos2rgb(dst, dw, dh);</span>
+<span class="nc" id="L491">        bitBlt(srcI, sx, sy, dstI, dx, dy, w, h, rop);</span>
+<span class="nc" id="L492">        Graphics2D gfx = dstI.createGraphics();</span>
+<span class="nc" id="L493">        gfx.drawImage(srcI,</span>
+            dy, dx, dy + h, dx + w,
+            sy, sx, sy + h, sx + w,
+            Color.WHITE, null);
+<span class="nc" id="L497">        gfx.dispose();</span>
+<span class="nc" id="L498">        byte[] data = any2lejos(dstI);</span>
+<span class="nc" id="L499">        System.arraycopy(data, 0, dst, 0, Math.min(data.length, dst.length));</span>
+<span class="nc" id="L500">    }</span>
+
+    private void bitBlt(BufferedImage src, int sx, int sy, BufferedImage dst, int dx, int dy, int w, int h, int rop) {
+<span class="nc" id="L503">        WritableRaster srcR = src.getRaster();</span>
+<span class="nc" id="L504">        WritableRaster dstR = dst.getRaster();</span>
+
+<span class="nc" id="L506">        byte msk_dst = (byte) (0xFF &amp; (rop &gt;&gt; 24));</span>
+<span class="nc" id="L507">        byte xor_dst = (byte) (0xFF &amp; (rop &gt;&gt; 16));</span>
+<span class="nc" id="L508">        byte msk_src = (byte) (0xFF &amp; (rop &gt;&gt; 8));</span>
+<span class="nc" id="L509">        byte xor_src = (byte) (0xFF &amp; (rop));</span>
+<span class="nc bnc" id="L510" title="All 4 branches missed.">        boolean dstskip = msk_dst == 0 &amp;&amp; xor_dst == 0;</span>
+
+<span class="nc" id="L512">        int[] dstpix = new int[4];</span>
+<span class="nc" id="L513">        int[] srcpix = new int[4];</span>
+<span class="nc bnc" id="L514" title="All 2 branches missed.">        for (int vx = 0; vx &lt; w; vx++) {</span>
+<span class="nc bnc" id="L515" title="All 2 branches missed.">            for (int vy = 0; vy &lt; h; vy++) {</span>
+<span class="nc" id="L516">                int srcx = sx + vx;</span>
+<span class="nc" id="L517">                int srcy = sy + vy;</span>
+<span class="nc" id="L518">                int dstx = dx + vx;</span>
+<span class="nc" id="L519">                int dsty = dy + vy;</span>
+<span class="nc" id="L520">                srcR.getPixel(srcx, srcy, srcpix);</span>
+
+<span class="nc bnc" id="L522" title="All 2 branches missed.">                if (dstskip) {</span>
+                    // only rgb, no a
+<span class="nc bnc" id="L524" title="All 2 branches missed.">                    for (int s = 0; s &lt; 3; s++) {</span>
+<span class="nc" id="L525">                        dstpix[s] = ((srcpix[s] &amp; msk_src) ^ xor_src);</span>
+                    }
+                } else {
+<span class="nc" id="L528">                    dstR.getPixel(dstx, dsty, dstpix);</span>
+                    // only rgb, no a
+<span class="nc bnc" id="L530" title="All 2 branches missed.">                    for (int s = 0; s &lt; 3; s++) {</span>
+<span class="nc" id="L531">                        dstpix[s] = ((dstpix[s] &amp; msk_dst) ^ xor_dst) ^ ((srcpix[s] &amp; msk_src) ^ xor_src);</span>
+                    }
+                }
+<span class="nc" id="L534">                dstR.setPixel(dstx, dsty, dstpix);</span>
+            }
+        }
+<span class="nc" id="L537">    }</span>
+
+
+    @Override
+    public void setAutoRefresh(boolean b) {
+<span class="nc bnc" id="L542" title="All 2 branches missed.">        if (this.timer_run != b) {</span>
+<span class="nc" id="L543">            this.timer_run = b;</span>
+<span class="nc" id="L544">            timerUpdate();</span>
+        }
+<span class="nc" id="L546">    }</span>
+
+    @Override
+    public int setAutoRefreshPeriod(int i) {
+<span class="nc" id="L550">        int old = this.timer_msec;</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        if (old != i) {</span>
+<span class="nc" id="L552">            this.timer_msec = i;</span>
+<span class="nc" id="L553">            timerUpdate();</span>
+        }
+<span class="nc" id="L555">        return old;</span>
+    }
+
+    private void timerUpdate() {
+<span class="nc" id="L559">        timer.cancel();</span>
+<span class="nc bnc" id="L560" title="All 4 branches missed.">        if (timer_run &amp;&amp; timer_msec &gt; 0) {</span>
+<span class="nc" id="L561">            timer.scheduleAtFixedRate(new Flusher(), 0, timer_msec);</span>
+        }
+<span class="nc" id="L563">    }</span>
+
+<span class="nc" id="L565">    private class Flusher extends TimerTask {</span>
+        @Override
+        public void run() {
+<span class="nc" id="L568">            refresh();</span>
+<span class="nc" id="L569">        }</span>
+    }
+
+    @Override
+    public void drawOval(int x, int y, int width, int height) {
+<span class="nc" id="L574">        g2d.drawOval(x, y, width, height);</span>
+<span class="nc" id="L575">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

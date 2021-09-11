@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NXTTemperatureSensor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors.nxt</a> &gt; <span class="el_source">NXTTemperatureSensor.java</span></div><h1>NXTTemperatureSensor.java</h1><pre class="source lang-java linenums">package ev3dev.sensors.nxt;
+
+import ev3dev.sensors.BaseSensor;
+import ev3dev.sensors.GenericMode;
+import ev3dev.utils.Sysfs;
+import java.io.File;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.SampleProvider;
+
+public class NXTTemperatureSensor extends BaseSensor {
+
+    private static final String LEGO_NXT_TEMP = &quot;lego-nxt-temp&quot;;
+
+<span class="fc" id="L15">    public static float CELSIUS_MIN_RANGE = -550f; //celsius degrees</span>
+<span class="fc" id="L16">    public static float CELSIUS_MAX_RANGE = 1280f; //celsius degrees</span>
+
+<span class="fc" id="L18">    public static float FAHRENHEIT_MIN_RANGE = -670f; //fahrenheit degrees</span>
+<span class="fc" id="L19">    public static float FAHRENHEIT_MAX_RANGE = 2624f; //fahrenheit degrees</span>
+
+    private static final String MODE_CELSIUS = &quot;NXT-TEMP-C&quot;;
+    private static final String MODE_FAHRENHEIT = &quot;NXT-TEMP-F&quot;;
+
+    /**
+     * Constructor
+     *
+     * @param portName Port name
+     */
+    public NXTTemperatureSensor(final Port portName) {
+<span class="fc" id="L30">        super(portName, LEGO_I2C, LEGO_NXT_TEMP);</span>
+
+<span class="fc" id="L32">        setModes(new SensorMode[]{</span>
+            new InternalMode(this.PATH_DEVICE, 1, &quot;C&quot;, CELSIUS_MIN_RANGE, CELSIUS_MAX_RANGE, 1.0f),
+            new InternalMode(this.PATH_DEVICE, 1, &quot;F&quot;, FAHRENHEIT_MIN_RANGE, FAHRENHEIT_MAX_RANGE, 1.0f)
+        });
+<span class="fc" id="L36">    }</span>
+
+    public SampleProvider getCelsiusMode() {
+<span class="fc" id="L39">        switchMode(MODE_CELSIUS, SWITCH_DELAY);</span>
+<span class="fc" id="L40">        return getMode(0);</span>
+    }
+
+    public SampleProvider getFahrenheitMode() {
+<span class="fc" id="L44">        switchMode(MODE_FAHRENHEIT, SWITCH_DELAY);</span>
+<span class="fc" id="L45">        return getMode(1);</span>
+    }
+
+    //TODO Review GenericMode to not duplicate (reading = Float.NEGATIVE_INFINITY;)
+    private class InternalMode extends GenericMode {
+
+        private final float correctMin;
+        private final float correctMax;
+        private final float correctFactor;
+
+        public InternalMode(File pathDevice, int sampleSize, String modeName,
+<span class="fc" id="L56">                            float correctMin, float correctMax, float correctFactor) {</span>
+<span class="fc" id="L57">            super(pathDevice, sampleSize, modeName, correctMin, correctMax, correctFactor);</span>
+
+<span class="fc" id="L59">            this.correctMin = correctMin;</span>
+<span class="fc" id="L60">            this.correctMax = correctMax;</span>
+<span class="fc" id="L61">            this.correctFactor = correctFactor;</span>
+<span class="fc" id="L62">        }</span>
+
+        @Override
+        public void fetchSample(float[] sample, int offset) {
+
+<span class="fc" id="L67">            float reading = Sysfs.readFloat(this.pathDevice + &quot;/&quot; + &quot;value0&quot;);</span>
+
+            //Processing
+<span class="fc" id="L70">            reading = reading / 10f;</span>
+<span class="fc" id="L71">            reading *= correctFactor;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (reading &lt; correctMin) {</span>
+<span class="fc" id="L73">                reading = Float.NEGATIVE_INFINITY;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">            } else if (reading &gt;= correctMax) {</span>
+<span class="fc" id="L75">                reading = Float.POSITIVE_INFINITY;</span>
+            }
+
+            // store
+<span class="fc" id="L79">            sample[0] = reading;</span>
+<span class="fc" id="L80">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

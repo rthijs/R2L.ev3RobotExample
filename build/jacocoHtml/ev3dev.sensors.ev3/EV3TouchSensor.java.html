@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EV3TouchSensor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors.ev3</a> &gt; <span class="el_source">EV3TouchSensor.java</span></div><h1>EV3TouchSensor.java</h1><pre class="source lang-java linenums">package ev3dev.sensors.ev3;
+
+import ev3dev.sensors.BaseSensor;
+import ev3dev.sensors.GenericMode;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.Touch;
+
+/**
+ * &lt;b&gt;Lego EV3 Touch sensors&lt;/b&gt;&lt;br&gt;
+ * The analog EV3 Touch Sensor is a simple but exceptionally precise tool that detects
+ * when its front button is pressed or released.
+ *
+ * &lt;p&gt;See &lt;a href=&quot;http://www.ev-3.net/en/archives/846&quot;&gt; Sensor Product page &lt;/a&gt;
+ * See &lt;a href=&quot;http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/&quot;&gt; The
+ * leJOS sensors framework&lt;/a&gt;
+ * See &lt;a href=&quot;http://www.ev3dev.org/docs/sensors/#uart-sensors&quot;&gt; The UART Sensors&lt;/a&gt;
+ * See {@link lejos.robotics.SampleProvider leJOS conventions for
+ * SampleProviders}
+ *
+ * @author andy
+ * @author Juan Antonio Breña Moral
+ */
+public class EV3TouchSensor extends BaseSensor implements Touch {
+
+    private static final String LEGO_EV3_TOUCH = &quot;lego-ev3-touch&quot;;
+
+    public EV3TouchSensor(final Port portName) {
+<span class="fc" id="L29">        super(portName, LEGO_ANALOG_SENSOR);</span>
+<span class="fc" id="L30">        setModes(new SensorMode[]{new GenericMode(this.PATH_DEVICE, 1, &quot;Touch&quot;)});</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * &lt;b&gt;Lego EV3 Touch sensors, Touch mode&lt;/b&gt;&lt;br&gt;
+     * Detects when its front button is pressed
+     *
+     * &lt;p&gt;
+     * &lt;b&gt;Size and content of the sample&lt;/b&gt;&lt;br&gt;
+     * The sample contains one element, a value of 0 indicates that the button is not presse,
+     * a value of 1 indicates the button is pressed.
+     *
+     * &lt;/p&gt;
+     *
+     * @return A sampleProvider
+     *     See {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     */
+    public SensorMode getTouchMode() {
+<span class="fc" id="L48">        return getMode(0);</span>
+    }
+
+    @Override
+    public boolean isPressed() {
+<span class="fc" id="L53">        float[] sample = new float[1];</span>
+<span class="fc" id="L54">        getTouchMode().fetchSample(sample, 0);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        return sample[0] != 0.0f;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

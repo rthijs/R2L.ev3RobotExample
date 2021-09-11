@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BitFramebuffer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">BitFramebuffer.java</span></div><h1>BitFramebuffer.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import com.sun.jna.LastErrorException;
+import ev3dev.utils.io.NativeFramebuffer;
+import lombok.extern.slf4j.Slf4j;
+
+import java.awt.image.BufferedImage;
+
+import static ev3dev.utils.io.NativeConstants.FB_TYPE_PACKED_PIXELS;
+import static ev3dev.utils.io.NativeConstants.FB_VISUAL_MONO01;
+import static ev3dev.utils.io.NativeConstants.FB_VISUAL_MONO10;
+
+/**
+ * Linux black-and-white 1bpp framebuffer
+ *
+ * @since 2.4.7
+ */
+<span class="fc" id="L18">@Slf4j</span>
+public class BitFramebuffer extends LinuxFramebuffer {
+
+    /**
+     * Create and initialize new Linux 1bpp framebuffer.
+     *
+     * @param fb The framebuffer device (e.g. /dev/fb0)
+     * @param disp Display manager (e.g. /dev/tty)
+     */
+    public BitFramebuffer(NativeFramebuffer fb, DisplayInterface disp)
+        throws LastErrorException, IllegalArgumentException {
+
+<span class="fc" id="L30">        super(fb, disp);</span>
+
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (getFixedInfo().type != FB_TYPE_PACKED_PIXELS) {</span>
+            try {
+<span class="nc" id="L34">                close();</span>
+<span class="nc" id="L35">            } catch (LastErrorException e) {</span>
+<span class="nc" id="L36">                throw new RuntimeException(&quot;Cannot close framebuffer&quot;, e);</span>
+<span class="nc" id="L37">            }</span>
+<span class="nc" id="L38">            LOGGER.debug(&quot;Framebuffer uses non-packed pixels&quot;);</span>
+<span class="nc" id="L39">            throw new IllegalArgumentException(&quot;Only framebuffers with packed pixels are supported&quot;);</span>
+        }
+        // probably duplicated, but this way we are sure
+<span class="pc bpc" id="L42" title="1 of 4 branches missed.">        boolean nonMono = getFixedInfo().visual != FB_VISUAL_MONO10 &amp;&amp; getFixedInfo().visual != FB_VISUAL_MONO01;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        boolean non1bpp = getVariableInfo().bits_per_pixel != 1;</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">        if (nonMono || non1bpp) {</span>
+            try {
+<span class="fc" id="L46">                close();</span>
+<span class="nc" id="L47">            } catch (LastErrorException e) {</span>
+<span class="nc" id="L48">                throw new RuntimeException(&quot;Cannot close framebuffer&quot;, e);</span>
+<span class="fc" id="L49">            }</span>
+<span class="fc" id="L50">            LOGGER.debug(&quot;Framebuffer is not 1bpp mono&quot;);</span>
+<span class="fc" id="L51">            throw new IllegalArgumentException(&quot;Only framebuffers with 1bpp BW are supported&quot;);</span>
+        }
+        // taking ownership
+<span class="fc" id="L54">        initializeMemory();</span>
+<span class="fc" id="L55">        setDeviceClose(true);</span>
+<span class="fc" id="L56">    }</span>
+
+    @Override
+    public BufferedImage createCompatibleBuffer(int width, int height) {
+<span class="fc" id="L60">        int stride = (width + 7) / 8;</span>
+<span class="fc" id="L61">        return createCompatibleBuffer(width, height, stride, new byte[stride * height]);</span>
+    }
+
+    @Override
+    public BufferedImage createCompatibleBuffer(int width, int height, int stride, byte[] backed) {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        return ImageUtils.createBWImage(width, height, stride, getFixedInfo().visual == FB_VISUAL_MONO01, backed);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

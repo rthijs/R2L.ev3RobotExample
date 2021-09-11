@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StolenDisplay.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">StolenDisplay.java</span></div><h1>StolenDisplay.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import ev3dev.utils.io.ILibc;
+import ev3dev.utils.io.NativeFramebuffer;
+import ev3dev.utils.Brickman;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Class to allow running programs over SSH
+ *
+ * @author Jakub Vaněk
+ * @since 2.4.7
+ */
+<span class="nc" id="L15">@Slf4j</span>
+class StolenDisplay extends DisplayInterface {
+    private ILibc libc;
+
+    /**
+     * noop
+     */
+<span class="nc bnc" id="L22" title="All 2 branches missed.">    public StolenDisplay(@NonNull ILibc libc) {</span>
+<span class="nc" id="L23">        this.libc = libc;</span>
+<span class="nc" id="L24">        Brickman.disable();</span>
+<span class="nc" id="L25">    }</span>
+
+    /**
+     * noop, graphics goes to the display
+     */
+    @Override
+    public void switchToGraphicsMode() {
+<span class="nc" id="L32">        LOGGER.trace(&quot;Switch to graphics mode&quot;);</span>
+<span class="nc" id="L33">    }</span>
+
+    /**
+     * noop, text goes to SSH host
+     */
+    @Override
+    public void switchToTextMode() {
+<span class="nc" id="L40">        LOGGER.trace(&quot;Switch to text mode&quot;);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * noop, we do not have any resources
+     */
+    @Override
+    public void close() {
+<span class="nc" id="L48">        LOGGER.trace(&quot;Display close&quot;);</span>
+        // free objects
+<span class="nc" id="L50">        closeFramebuffer();</span>
+<span class="nc" id="L51">        libc = null;</span>
+<span class="nc" id="L52">    }</span>
+
+    @Override
+    public synchronized JavaFramebuffer openFramebuffer() {
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (fbInstance == null) {</span>
+<span class="nc" id="L57">            LOGGER.debug(&quot;Initialing framebuffer in fake console&quot;);</span>
+<span class="nc" id="L58">            initializeFramebuffer(new NativeFramebuffer(&quot;/dev/fb0&quot;, libc), true);</span>
+        }
+<span class="nc" id="L60">        return fbInstance;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

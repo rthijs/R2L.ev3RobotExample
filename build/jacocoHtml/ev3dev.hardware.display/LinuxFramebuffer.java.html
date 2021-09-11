@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LinuxFramebuffer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">LinuxFramebuffer.java</span></div><h1>LinuxFramebuffer.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import com.sun.jna.LastErrorException;
+import com.sun.jna.Pointer;
+import ev3dev.utils.io.NativeConstants;
+import ev3dev.utils.io.NativeFramebuffer;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+/**
+ * &lt;p&gt;Linux Java2D framebuffer.&lt;/p&gt;
+ *
+ * @since 2.4.7
+ */
+<span class="fc" id="L19">@Slf4j</span>
+public abstract class LinuxFramebuffer implements JavaFramebuffer {
+    /**
+     * Underlying fixed framebuffer info.
+     */
+    private NativeFramebuffer.fb_fix_screeninfo fixinfo;
+    /**
+     * Underlying variable framebuffer info.
+     */
+    private NativeFramebuffer.fb_var_screeninfo varinfo;
+    /**
+     * Underlying native Linux device.
+     */
+    private NativeFramebuffer device;
+    /**
+     * Memory-mapped memory from Linux framebuffer device.
+     */
+    private Pointer videomem;
+    /**
+     * Whether to enable display output.
+     */
+    private boolean flushEnabled;
+    /**
+     * Framebuffer backup for VT switches.
+     */
+    private byte[] backup;
+    /**
+     * Cache blank image.
+     */
+    private BufferedImage blank;
+    /**
+     * Whether to close the nativeframebuffer device when closing this framebuffer.
+     */
+    private boolean closeDevice;
+    /**
+     * Display manager
+     */
+    private DisplayInterface display;
+
+    /**
+     * Create and initialize new Linux-based Java2D framebuffer.
+     *
+     * @param fb   Framebuffer device (e.g. /dev/fb0)
+     * @param disp Display manager (e.g. /dev/tty)
+     */
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    public LinuxFramebuffer(@NonNull NativeFramebuffer fb, DisplayInterface disp) throws LastErrorException {</span>
+<span class="fc" id="L65">        setDeviceClose(false);</span>
+<span class="fc" id="L66">        device = fb;</span>
+<span class="fc" id="L67">        display = disp;</span>
+<span class="fc" id="L68">        fixinfo = device.getFixedScreenInfo();</span>
+<span class="fc" id="L69">        varinfo = device.getVariableScreenInfo();</span>
+<span class="fc" id="L70">        varinfo.xres_virtual = varinfo.xres;</span>
+<span class="fc" id="L71">        varinfo.yres_virtual = varinfo.yres;</span>
+<span class="fc" id="L72">        varinfo.xoffset = 0;</span>
+<span class="fc" id="L73">        varinfo.yoffset = 0;</span>
+<span class="fc" id="L74">        device.setVariableScreenInfo(varinfo);</span>
+<span class="fc" id="L75">        videomem = null;</span>
+<span class="fc" id="L76">        backup = new byte[(int) getBufferSize()];</span>
+<span class="fc" id="L77">        blank = null;</span>
+<span class="fc" id="L78">        flushEnabled = true;</span>
+<span class="fc" id="L79">        LOGGER.debug(&quot;Opened LinuxFB, mode {}x{}x{}bpp&quot;, varinfo.xres, varinfo.yres, varinfo.bits_per_pixel);</span>
+<span class="fc" id="L80">    }</span>
+
+    protected void initializeMemory() throws LastErrorException {
+<span class="fc" id="L83">        videomem = device.mmap(getBufferSize());</span>
+<span class="fc" id="L84">    }</span>
+
+    @Override
+    public void close() throws LastErrorException {
+<span class="fc" id="L88">        LOGGER.trace(&quot;Closing LinuxFB&quot;);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (videomem != null) {</span>
+<span class="fc" id="L90">            device.munmap(videomem, getBufferSize());</span>
+        }
+<span class="pc bpc" id="L92" title="1 of 4 branches missed.">        if (closeDevice &amp;&amp; device != null) {</span>
+<span class="fc" id="L93">            device.close();</span>
+        }
+        // free objects
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (display != null) {</span>
+<span class="nc" id="L97">            display.releaseFramebuffer(this);</span>
+        }
+<span class="fc" id="L99">        display = null;</span>
+<span class="fc" id="L100">        blank = null;</span>
+<span class="fc" id="L101">        device = null;</span>
+<span class="fc" id="L102">        backup = null;</span>
+<span class="fc" id="L103">        fixinfo = null;</span>
+<span class="fc" id="L104">        varinfo = null;</span>
+<span class="fc" id="L105">    }</span>
+
+    @Override
+    public int getWidth() {
+<span class="fc" id="L109">        return varinfo.xres;</span>
+    }
+
+    @Override
+    public int getHeight() {
+<span class="fc" id="L114">        return varinfo.yres;</span>
+    }
+
+    @Override
+    public int getStride() {
+<span class="fc" id="L119">        return fixinfo.line_length;</span>
+    }
+
+    @Override
+    public BufferedImage createCompatibleBuffer() {
+<span class="fc" id="L124">        return createCompatibleBuffer(getWidth(), getHeight(), getFixedInfo().line_length);</span>
+    }
+
+    @Override
+    public abstract BufferedImage createCompatibleBuffer(int width, int height);
+
+    @Override
+    public BufferedImage createCompatibleBuffer(int width, int height, int stride) {
+<span class="fc" id="L132">        return createCompatibleBuffer(width, height, stride, new byte[height * stride]);</span>
+    }
+
+    @Override
+    public abstract BufferedImage createCompatibleBuffer(int width, int height, int stride, @NonNull byte[] backed);
+
+    @Override
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    public void flushScreen(@NonNull BufferedImage compatible) {</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (flushEnabled) {</span>
+<span class="fc" id="L141">            LOGGER.trace(&quot;Drawing frame on framebuffer&quot;);</span>
+<span class="fc" id="L142">            videomem.write(0, ImageUtils.getImageBytes(compatible), 0, (int) getBufferSize());</span>
+<span class="fc" id="L143">            device.msync(videomem, getBufferSize(), NativeConstants.MS_SYNC);</span>
+        } else {
+<span class="fc" id="L145">            LOGGER.trace(&quot;Not drawing frame on framebuffer&quot;);</span>
+        }
+<span class="fc" id="L147">    }</span>
+
+    @Override
+    public void setFlushEnabled(boolean rly) {
+<span class="fc" id="L151">        this.flushEnabled = rly;</span>
+<span class="fc" id="L152">    }</span>
+
+    @Override
+    public void storeData() {
+<span class="fc" id="L156">        LOGGER.trace(&quot;Storing framebuffer snapshot&quot;);</span>
+<span class="fc" id="L157">        videomem.read(0, backup, 0, (int) getBufferSize());</span>
+<span class="fc" id="L158">    }</span>
+
+    @Override
+    public void restoreData() {
+<span class="fc" id="L162">        LOGGER.trace(&quot;Retoring framebuffer snapshot&quot;);</span>
+<span class="fc" id="L163">        videomem.write(0, backup, 0, (int) getBufferSize());</span>
+<span class="fc" id="L164">        device.msync(videomem, getBufferSize(), NativeConstants.MS_SYNC);</span>
+<span class="fc" id="L165">    }</span>
+
+    @Override
+    public void clear() {
+<span class="fc" id="L169">        LOGGER.trace(&quot;Clearing framebuffer&quot;);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (blank == null) {</span>
+<span class="fc" id="L171">            blank = createCompatibleBuffer();</span>
+<span class="fc" id="L172">            Graphics2D gfx = blank.createGraphics();</span>
+<span class="fc" id="L173">            gfx.setColor(Color.WHITE);</span>
+<span class="fc" id="L174">            gfx.fillRect(0, 0, getWidth(), getHeight());</span>
+<span class="fc" id="L175">            gfx.dispose();</span>
+        }
+<span class="fc" id="L177">        flushScreen(blank);</span>
+<span class="fc" id="L178">    }</span>
+
+    @Override
+    public DisplayInterface getDisplay() {
+<span class="nc" id="L182">        return display;</span>
+    }
+
+    /**
+     * Get Linux framebuffer fixed info.
+     *
+     * @return Fixed information about the framebuffer.
+     */
+    public NativeFramebuffer.fb_fix_screeninfo getFixedInfo() {
+<span class="fc" id="L191">        return fixinfo;</span>
+    }
+
+    /**
+     * Get Linux framebuffer variable info.
+     *
+     * @return Variable information about the framebuffer.
+     */
+    public NativeFramebuffer.fb_var_screeninfo getVariableInfo() {
+<span class="fc" id="L200">        return varinfo;</span>
+    }
+
+    /**
+     * Get the underlying native device.
+     *
+     * @return Linux device
+     */
+    public NativeFramebuffer getDevice() {
+<span class="nc" id="L209">        return device;</span>
+    }
+
+    /**
+     * Get direct access to the video memory.
+     *
+     * @return JNA pointer to the framebuffer
+     * @see LinuxFramebuffer#getBufferSize() for memory size.
+     */
+    public Pointer getMemory() {
+<span class="nc" id="L219">        return videomem;</span>
+    }
+
+    /**
+     * Get video memory size.
+     *
+     * @return Size of video memory in bytes.
+     * @see LinuxFramebuffer#getMemory() for memory pointer.
+     */
+    public long getBufferSize() {
+<span class="fc" id="L229">        return getHeight() * getStride();</span>
+    }
+
+    /**
+     * Set whether to close the underlying device on exit.
+     */
+    protected void setDeviceClose(boolean rly) {
+<span class="fc" id="L236">        closeDevice = rly;</span>
+<span class="fc" id="L237">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

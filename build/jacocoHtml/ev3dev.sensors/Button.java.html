@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Button.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.sensors</a> &gt; <span class="el_source">Button.java</span></div><h1>Button.java</h1><pre class="source lang-java linenums">package ev3dev.sensors;
+
+import lejos.hardware.Key;
+import org.slf4j.Logger;
+
+/**
+ * Abstraction for an NXT/EV3 button. Example:
+ *
+ * &lt;pre&gt;
+ * EV3Key.ENTER.waitForPressAndRelease();
+ * Sound.playTone(1000, 1);
+ * &lt;/pre&gt;
+ *
+ * &lt;b&gt;Notions:&lt;/b&gt; The API is designed around two notions: states (up / down)
+ * and events (press / release). It is said that a button is pressed (press
+ * event), if its state changes from up to down. Similarly, it is said that a
+ * button is released (release event), if its states changed from down to up.
+ *
+ * &lt;b&gt;Thread Safety&lt;/b&gt;: All methods that return buttons states can be used
+ * safely from multiple threads, even while a call to one of the waitFor*
+ * methods active. However, it is not safe to invoke waitFor* methods in
+ * parallel from different threads. This includes the waitFor* methods of
+ * different buttons. For example EV3Key.ENTER.waitForPress() must not be
+ * invoked in parallel to EV3Key.ESCAPE.waitForPress() or the static
+ * EV3Key.waitForAnyEvent(). In case this is needed, it is strongly recommended
+ * that you write your own Thread, which waits for button events and dispatches
+ * the events to anyone who's interested.
+ */
+<span class="nc" id="L29">public class Button {</span>
+
+<span class="fc" id="L31">    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Button.class);</span>
+
+    /**
+     * The Enter button.
+     */
+<span class="fc" id="L36">    public static final Key ENTER = new EV3Key(EV3Key.BUTTON_ENTER);</span>
+    /**
+     * The Left button.
+     */
+<span class="fc" id="L40">    public static final Key LEFT = new EV3Key(EV3Key.BUTTON_LEFT);</span>
+    /**
+     * The Right button.
+     */
+<span class="fc" id="L44">    public static final Key RIGHT = new EV3Key(EV3Key.BUTTON_RIGHT);</span>
+    /**
+     * The Escape button.
+     */
+<span class="fc" id="L48">    public static final Key ESCAPE = new EV3Key(EV3Key.BUTTON_BACKSPACE);</span>
+    /**
+     * The Up button.
+     */
+<span class="fc" id="L52">    public static final Key UP = new EV3Key(EV3Key.BUTTON_UP);</span>
+    /**
+     * The Down button.
+     */
+<span class="fc" id="L56">    public static final Key DOWN = new EV3Key(EV3Key.BUTTON_DOWN);</span>
+
+<span class="fc" id="L58">    private static final Key ALL = new EV3Key(EV3Key.BUTTON_ALL);</span>
+
+    //public static final Keys keys = BrickFinder.getDefault().getKeys();
+
+    /**
+     * Waits for some button to be pressed or released. Which buttons have been
+     * released or pressed is returned as a bitmask. The lower eight bits (bits
+     * 0 to 7) indicate, which buttons have been pressed. Bits 8 to 15 indicate
+     * which buttons have been released.
+     *
+     * @return the bitmask
+     */
+    public static int waitForAnyEvent() {
+<span class="nc" id="L71">        log.debug(&quot;Not implemented&quot;);</span>
+<span class="nc" id="L72">        return 0;//keys.waitForAnyEvent();</span>
+    }
+
+    /**
+     * Waits for some button to be pressed or released. Which buttons have been
+     * released or pressed is returned as a bitmask. The lower eight bits (bits
+     * 0 to 7) indicate, which buttons have been pressed. Bits 8 to 15 indicate
+     * which buttons have been released.
+     *
+     * @param timeout The maximum number of milliseconds to wait
+     * @return the bitmask
+     */
+    public static int waitForAnyEvent(int timeout) {
+<span class="nc" id="L85">        return 0;//keys.waitForAnyEvent(timeout);</span>
+    }
+
+    /**
+     * Waits for some button to be pressed. If a button is already pressed, it
+     * must be released and pressed again.
+     *
+     * @param timeout The maximum number of milliseconds to wait
+     * @return the ID of the button that has been pressed or in rare cases a
+     *     bitmask of button IDs, 0 if the given timeout is reached
+     */
+    public static int waitForAnyPress(int timeout) {
+<span class="nc" id="L97">        ALL.waitForPress();</span>
+<span class="nc" id="L98">        return 0;//keys.waitForAnyPress(timeout);</span>
+    }
+
+    /**
+     * Waits for some button to be pressed. If a button is already pressed, it
+     * must be released and pressed again.
+     *
+     * @return the ID of the button that has been pressed or in rare cases a bitmask of button IDs
+     */
+    public static int waitForAnyPress() {
+<span class="nc" id="L108">        return waitForAnyPress(0);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.robotics.tts.EspeakTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:45" hostname="muziektop" time="0.052">
+  <properties/>
+  <testcase name="playMessageTest" classname="ev3dev.robotics.tts.EspeakTest" time="0.045"/>
+  <testcase name="playFilePathTest" classname="ev3dev.robotics.tts.EspeakTest" time="0.007"/>
+  <system-out><![CDATA[2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.robotics.tts.Espeak - Command: /bin/sh -c espeak  -v es -a 100 -s 105 -p 60 --stdout "Soy un robot bueno" | aplay
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: /bin/sh
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: -c
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: espeak  -v es -a 100 -s 105 -p 60 --stdout "Soy un robot bueno" | aplay
+2021-08-08 15:40:45 [Test worker] DEBUG ev3dev.robotics.tts.Espeak - Command: /bin/sh -c espeak  -v es -a 100 -s 105 -p 60--stdout  -f ./BAD_PATH.wav" | aplay
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: /bin/sh
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: -c
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - Command chunk: espeak  -v es -a 100 -s 105 -p 60--stdout  -f ./BAD_PATH.wav" | aplay
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

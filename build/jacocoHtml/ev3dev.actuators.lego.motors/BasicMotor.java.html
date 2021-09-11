@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BasicMotor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators.lego.motors</a> &gt; <span class="el_source">BasicMotor.java</span></div><h1>BasicMotor.java</h1><pre class="source lang-java linenums">package ev3dev.actuators.lego.motors;
+
+import ev3dev.hardware.EV3DevMotorDevice;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.hardware.EV3DevPlatforms;
+import lejos.hardware.port.Port;
+import lejos.robotics.DCMotor;
+import lejos.utility.Delay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Abstraction for basic motors operations.
+ *
+ * &lt;p&gt;Unregulated motors only is enabled for EV3Brick.
+ *
+ * @author Lawrie Griffiths.
+ * @author Juan Antonio Breña Moral
+ */
+public abstract class BasicMotor extends EV3DevMotorDevice implements DCMotor {
+
+<span class="fc" id="L25">    private static final Logger log = LoggerFactory.getLogger(BasicMotor.class);</span>
+
+<span class="fc" id="L27">    private int power = 50;</span>
+
+    /**
+     * Constructor
+     *
+     * @param motorPort port
+     */
+<span class="fc" id="L34">    public BasicMotor(final Port motorPort) {</span>
+
+<span class="fc" id="L36">        Set&lt;EV3DevPlatform&gt; supportedUnregulatedMotors = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L37">        supportedUnregulatedMotors.add(EV3DevPlatform.EV3BRICK);</span>
+<span class="fc" id="L38">        supportedUnregulatedMotors.add(EV3DevPlatform.BRICKPI3);</span>
+
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (!supportedUnregulatedMotors.contains(CURRENT_PLATFORM)) {</span>
+<span class="nc" id="L41">            throw new RuntimeException(&quot;This device is not supported in the platform: &quot; + CURRENT_PLATFORM);</span>
+        }
+
+<span class="fc" id="L44">        final EV3DevPlatforms ev3DevPlatforms = EV3DevPlatforms.getInstance();</span>
+<span class="fc" id="L45">        final String port = ev3DevPlatforms.getMotorPort(motorPort);</span>
+
+<span class="fc" id="L47">        log.debug(&quot;Detecting motor on port: {}&quot;, port);</span>
+<span class="fc" id="L48">        this.detect(LEGO_PORT, port);</span>
+<span class="fc" id="L49">        log.debug(&quot;Setting port in mode: {}&quot;, DC_MOTOR);</span>
+<span class="fc" id="L50">        this.setStringAttribute(MODE, DC_MOTOR);</span>
+<span class="fc" id="L51">        Delay.msDelay(500);</span>
+<span class="fc" id="L52">        this.detect(DC_MOTOR, port);</span>
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Set power
+     *
+     * @param power new motors power 0-100
+     */
+    @Override
+    public void setPower(final int power) {
+<span class="fc" id="L62">        this.power = power;</span>
+<span class="fc" id="L63">        this.setIntegerAttribute(DUTY_CYCLE, power);</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Get power
+     *
+     * @return power
+     */
+    @Override
+    public int getPower() {
+<span class="fc" id="L73">        return this.getIntegerAttribute(DUTY_CYCLE);</span>
+    }
+
+    /**
+     * Update the internal state tracking the motor direction
+     *
+     * @param newMode mode
+     */
+    protected void updateState(final String newMode) {
+<span class="fc" id="L82">        this.setStringAttribute(POLARITY, newMode);</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Causes motors to rotate forward.
+     */
+    @Override
+    public void forward() {
+<span class="fc" id="L90">        this.updateState(POLARITY_NORMAL);</span>
+<span class="fc" id="L91">        this.setPower(this.power);</span>
+<span class="fc" id="L92">        this.setStringAttribute(COMMAND, RUN_FOREVER);</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Causes motors to rotate backwards.
+     */
+    @Override
+    public void backward() {
+<span class="fc" id="L100">        this.updateState(POLARITY_INVERSED);</span>
+<span class="fc" id="L101">        this.setPower(this.power);</span>
+<span class="fc" id="L102">        this.setStringAttribute(COMMAND, RUN_FOREVER);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Returns true iff the motors is in motion.
+     *
+     * @return true iff the motors is currently in motion.
+     */
+    @Override
+    public boolean isMoving() {
+<span class="fc" id="L112">        return this.getStringAttribute(STATE).contains(STATE_RUNNING);</span>
+    }
+
+    /**
+     * Causes motors to float. The motors will lose all power,
+     * but this is not the same as stopping. Use this
+     * method if you don't want your robot to trip in
+     * abrupt turns.
+     */
+    @Override
+    public void flt() {
+<span class="fc" id="L123">        this.setStringAttribute(STOP_COMMAND, COAST);</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Causes motors to stop, pretty much
+     * instantaneously. In other words, the
+     * motors doesn't just stop; it will resist
+     * any further motion.
+     * Cancels any rotate() orders in progress
+     */
+    public void stop() {
+<span class="fc" id="L134">        this.setStringAttribute(COMMAND, STOP);</span>
+<span class="fc" id="L135">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

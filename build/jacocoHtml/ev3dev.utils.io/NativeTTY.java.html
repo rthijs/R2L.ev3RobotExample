@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeTTY.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils.io</a> &gt; <span class="el_source">NativeTTY.java</span></div><h1>NativeTTY.java</h1><pre class="source lang-java linenums">package ev3dev.utils.io;
+
+import com.sun.jna.LastErrorException;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+import com.sun.jna.ptr.IntByReference;
+import lombok.NonNull;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static ev3dev.utils.io.NativeConstants.KDGKBMODE;
+import static ev3dev.utils.io.NativeConstants.KDSETMODE;
+import static ev3dev.utils.io.NativeConstants.KDSKBMODE;
+import static ev3dev.utils.io.NativeConstants.VT_GETMODE;
+import static ev3dev.utils.io.NativeConstants.VT_GETSTATE;
+import static ev3dev.utils.io.NativeConstants.VT_RELDISP;
+import static ev3dev.utils.io.NativeConstants.VT_SETMODE;
+
+/**
+ * Wrapper for basic actions on Linux VT/TTY
+ *
+ * @author Jakub Vaněk
+ * @since 2.4.7
+ */
+public class NativeTTY extends NativeDevice {
+
+    /**
+     * Initialize new TTY.
+     *
+     * @param dname Path to TTY device.
+     * @throws LastErrorException when the operation fails.
+     */
+<span class="nc bnc" id="L34" title="All 2 branches missed.">    public NativeTTY(@NonNull String dname) throws LastErrorException {</span>
+<span class="nc" id="L35">        super(dname, NativeConstants.O_RDWR);</span>
+<span class="nc" id="L36">    }</span>
+
+    /**
+     * Initialize new TTY.
+     *
+     * @param dname Path to TTY device.
+     * @param flags Opening mode, e.g. read, write or both.
+     * @throws LastErrorException when the operation fails.
+     */
+<span class="nc bnc" id="L45" title="All 2 branches missed.">    public NativeTTY(@NonNull String dname, int flags) throws LastErrorException {</span>
+<span class="nc" id="L46">        super(dname, flags);</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * Initialize new TTY.
+     *
+     * @param dname Path to TTY device.
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when the operation fails.
+     */
+<span class="nc bnc" id="L56" title="All 4 branches missed.">    public NativeTTY(@NonNull String dname, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="nc" id="L57">        super(dname, NativeConstants.O_RDWR, libc);</span>
+<span class="nc" id="L58">    }</span>
+
+    /**
+     * Initialize new TTY.
+     *
+     * @param dname Path to TTY device.
+     * @param flags Opening mode, e.g. read, write or both.
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when the operation fails.
+     */
+<span class="nc bnc" id="L68" title="All 4 branches missed.">    public NativeTTY(@NonNull String dname, int flags, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="nc" id="L69">        super(dname, flags, libc);</span>
+<span class="nc" id="L70">    }</span>
+
+    /**
+     * Get current TTY mode. TTY mode is mostly about VT switching.
+     *
+     * @return TTY mode.
+     * @throws LastErrorException when the operation fails.
+     */
+    public vt_mode getVTmode() throws LastErrorException {
+<span class="nc" id="L79">        vt_mode mode = new vt_mode();</span>
+<span class="nc" id="L80">        super.ioctl(VT_GETMODE, mode.getPointer());</span>
+<span class="nc" id="L81">        mode.read();</span>
+<span class="nc" id="L82">        return mode;</span>
+    }
+
+    /**
+     * Set current TTY mode. TTY mode is mostly about VT switching.
+     *
+     * @param mode TTY mode.
+     * @throws LastErrorException when the operation fails.
+     */
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    public void setVTmode(@NonNull vt_mode mode) throws LastErrorException {</span>
+<span class="nc" id="L92">        mode.write();</span>
+<span class="nc" id="L93">        super.ioctl(VT_SETMODE, mode.getPointer());</span>
+<span class="nc" id="L94">    }</span>
+
+    /**
+     * Get current TTY state.
+     *
+     * @return TTY state.
+     * @throws LastErrorException when the operation fails.
+     */
+    public vt_stat getVTstate() throws LastErrorException {
+<span class="nc" id="L103">        vt_stat stat = new vt_stat();</span>
+<span class="nc" id="L104">        super.ioctl(VT_GETSTATE, stat.getPointer());</span>
+<span class="nc" id="L105">        stat.read();</span>
+<span class="nc" id="L106">        return stat;</span>
+    }
+
+    /**
+     * Get current keyboard mode.
+     *
+     * @return Keyboard mode (raw, transformed or off) - K_* constants.
+     * @throws LastErrorException when the operation fails.
+     */
+    public int getKeyboardMode() throws LastErrorException {
+<span class="nc" id="L116">        IntByReference kbd = new IntByReference(0);</span>
+<span class="nc" id="L117">        super.ioctl(KDGKBMODE, kbd);</span>
+<span class="nc" id="L118">        return kbd.getValue();</span>
+    }
+
+    /**
+     * Set keyboard mode.
+     *
+     * @param mode Keyboard mode (raw, transformed or off) - K_* constants.
+     * @throws LastErrorException when the operation fails.
+     */
+    public void setKeyboardMode(int mode) throws LastErrorException {
+<span class="nc" id="L128">        super.ioctl(KDSKBMODE, mode);</span>
+<span class="nc" id="L129">    }</span>
+
+    /**
+     * Set console mode.
+     *
+     * @param mode Console mode - graphics or text mode - KD_* constants.
+     * @throws LastErrorException when the operation fails.
+     */
+    public void setConsoleMode(int mode) throws LastErrorException {
+<span class="nc" id="L138">        super.ioctl(KDSETMODE, mode);</span>
+<span class="nc" id="L139">    }</span>
+
+    /**
+     * Signal VT switch to the kernel.
+     *
+     * @param mode VT switching signal - VT_* constants.
+     * @throws LastErrorException when the operation fails.
+     */
+    public void signalSwitch(int mode) throws LastErrorException {
+<span class="nc" id="L148">        super.ioctl(VT_RELDISP, mode);</span>
+<span class="nc" id="L149">    }</span>
+
+    /**
+     * Info about an active VT.
+     */
+    public static class vt_stat extends Structure {
+        public short v_active; /* active vt */
+        public short v_signal; /* signal to send */
+        public short v_state; /* vt bitmask */
+
+        public vt_stat() {
+<span class="nc" id="L160">            super(ALIGN_GNUC);</span>
+<span class="nc" id="L161">        }</span>
+
+        public vt_stat(Pointer p) {
+<span class="nc" id="L164">            super(p, ALIGN_GNUC);</span>
+<span class="nc" id="L165">        }</span>
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="nc" id="L169">            return Arrays.asList(&quot;v_active&quot;, &quot;v_signal&quot;, &quot;v_state&quot;);</span>
+        }
+    }
+
+    /**
+     * Info about VT configuration.
+     */
+    public static class vt_mode extends Structure {
+        public byte mode;        /* vt mode */
+        public byte waitv;        /* if set, hang on writes if not active */
+        public short relsig;        /* signal to raise on release req */
+        public short acqsig;        /* signal to raise on acquisition */
+        public short frsig;        /* unused (set to 0) */
+
+        public vt_mode() {
+<span class="nc" id="L184">            super(ALIGN_GNUC);</span>
+<span class="nc" id="L185">        }</span>
+
+        public vt_mode(Pointer p) {
+<span class="nc" id="L188">            super(p, ALIGN_GNUC);</span>
+<span class="nc" id="L189">        }</span>
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="nc" id="L193">            return Arrays.asList(&quot;mode&quot;, &quot;waitv&quot;, &quot;relsig&quot;, &quot;acqsig&quot;, &quot;frsig&quot;);</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

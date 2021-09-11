@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EV3Led.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators.ev3</a> &gt; <span class="el_source">EV3Led.java</span></div><h1>EV3Led.java</h1><pre class="source lang-java linenums">package ev3dev.actuators.ev3;
+
+import ev3dev.hardware.EV3DevDevice;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.utils.Sysfs;
+import lejos.hardware.LED;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * This class provides methods for interacting with the LEDs on the EV3Brick.
+ *
+ * &lt;p&gt;&lt;i&gt;Only EV3Bricks are supported.&lt;/i&gt;
+ */
+public class EV3Led extends EV3DevDevice implements LED {
+
+    /**
+     * Directions of the LED.
+     */
+<span class="fc" id="L20">    public enum Direction {</span>
+<span class="fc" id="L21">        LEFT,</span>
+<span class="fc" id="L22">        RIGHT</span>
+    }
+
+<span class="fc" id="L25">    private static final Logger log = LoggerFactory.getLogger(EV3Led.class);</span>
+
+    public static final int LEFT = 0;
+    public static final int RIGHT = 1;
+
+    private final Direction direction;
+
+    private final String LED_RED;
+    private final String LED_GREEN;
+
+    /**
+     * Create an EV3LED object associated with the LED of the specified direction.
+     *
+     * @param direction the direction of the LED, either {@link Direction#LEFT} or {@link Direction#RIGHT}.
+     * @throws RuntimeException if LED feature is not supported on the current platform.
+     */
+<span class="fc" id="L41">    public EV3Led(final Direction direction) {</span>
+<span class="fc" id="L42">        checkPlatform();</span>
+
+        //TODO Refactor
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (direction == null) {</span>
+<span class="fc" id="L46">            log.error(&quot;You are not specifying any button.&quot;);</span>
+<span class="fc" id="L47">            throw new IllegalArgumentException(&quot;You are not specifying any button.&quot;);</span>
+        }
+
+<span class="fc" id="L50">        this.direction = direction;</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (direction == Direction.LEFT) {</span>
+<span class="fc" id="L53">            LED_RED = ev3DevProperties.getProperty(&quot;ev3.led.left.red&quot;);</span>
+<span class="fc" id="L54">            LED_GREEN = ev3DevProperties.getProperty(&quot;ev3.led.left.green&quot;);</span>
+        } else {
+<span class="fc" id="L56">            LED_RED = ev3DevProperties.getProperty(&quot;ev3.led.right.red&quot;);</span>
+<span class="fc" id="L57">            LED_GREEN = ev3DevProperties.getProperty(&quot;ev3.led.right.green&quot;);</span>
+        }
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Creates an EV3LED object associated with the LED of the specified direction.
+     *
+     * @param button the direction of the LED, should be either {@link #LEFT} or {@link #RIGHT}.
+     * @throws RuntimeException if LED feature is not supported on the current platform.
+     * @deprecated Use {@link #EV3Led(Direction)} instead.
+     */
+<span class="fc" id="L68">    public EV3Led(final int button) {</span>
+<span class="fc" id="L69">        checkPlatform();</span>
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (button == LEFT) {</span>
+<span class="fc" id="L72">            LED_RED = ev3DevProperties.getProperty(&quot;ev3.led.left.red&quot;);</span>
+<span class="fc" id="L73">            LED_GREEN = ev3DevProperties.getProperty(&quot;ev3.led.left.green&quot;);</span>
+<span class="fc" id="L74">            direction = Direction.LEFT;</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        } else if (button == RIGHT) {</span>
+<span class="fc" id="L76">            LED_RED = ev3DevProperties.getProperty(&quot;ev3.led.right.red&quot;);</span>
+<span class="fc" id="L77">            LED_GREEN = ev3DevProperties.getProperty(&quot;ev3.led.right.green&quot;);</span>
+<span class="fc" id="L78">            direction = Direction.RIGHT;</span>
+        } else {
+<span class="fc" id="L80">            log.error(&quot;You are not specifying any button.&quot;);</span>
+<span class="fc" id="L81">            throw new IllegalArgumentException(&quot;You are not specifying any button.&quot;);</span>
+        }
+
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Checks if the current platform support this feature.
+     *
+     * @throws RuntimeException if this feature is not supported on the current platform.
+     */
+    private void checkPlatform() {
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (!CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="nc" id="L93">            log.error(&quot;This actuator is specific of: {}&quot;, EV3DevPlatform.EV3BRICK);</span>
+<span class="nc" id="L94">            throw new RuntimeException(&quot;This actuator is specific of: &quot; + EV3DevPlatform.EV3BRICK);</span>
+        }
+<span class="fc" id="L96">    }</span>
+
+    //TODO Add Enums for patterns
+
+    /**
+     * Sets the pattern of light to be shown with this LED.
+     *
+     * @param pattern the pattern to show with this LED.
+     *
+     *                0: Turns off the LED light;
+     *                1/2/3: Static green/red/yellow light;
+     *                4/5/6: Normal blinking green/red/yellow light, &lt;i&gt;not implemented&lt;/i&gt;;
+     *                7/8/9: Fast blinking green/red/yellow light, &lt;i&gt;not implemented&lt;/i&gt;.
+     */
+    @Override
+    public void setPattern(final int pattern) {
+        //Off
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (pattern == 0) {</span>
+<span class="nc" id="L114">            Sysfs.writeInteger(LED_RED, 0);</span>
+<span class="nc" id="L115">            Sysfs.writeInteger(LED_GREEN, 0);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        } else if (pattern == 1) {</span>
+<span class="fc" id="L117">            Sysfs.writeInteger(LED_RED, 0);</span>
+<span class="fc" id="L118">            Sysfs.writeInteger(LED_GREEN, 255);</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        } else if (pattern == 2) {</span>
+<span class="fc" id="L120">            Sysfs.writeInteger(LED_RED, 255);</span>
+<span class="fc" id="L121">            Sysfs.writeInteger(LED_GREEN, 0);</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        } else if (pattern == 3) {</span>
+<span class="fc" id="L123">            Sysfs.writeInteger(LED_RED, 255);</span>
+<span class="fc" id="L124">            Sysfs.writeInteger(LED_GREEN, 255);</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        } else if (pattern &gt; 3) {</span>
+<span class="fc" id="L126">            log.debug(&quot;This feature is not implemented&quot;);</span>
+        }
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Returns the direction of the LED associated with this object.
+     *
+     * @return the direction of the LED, either {@link Direction#LEFT} or {@link Direction#RIGHT}.
+     */
+    public Direction getDirection() {
+<span class="fc" id="L136">        return direction;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

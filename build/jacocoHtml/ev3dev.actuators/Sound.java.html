@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators</a> &gt; <span class="el_source">Sound.java</span></div><h1>Sound.java</h1><pre class="source lang-java linenums">package ev3dev.actuators;
+
+import ev3dev.hardware.EV3DevDevice;
+import ev3dev.hardware.EV3DevDistro;
+import ev3dev.hardware.EV3DevDistros;
+import ev3dev.hardware.EV3DevPlatform;
+import ev3dev.utils.Shell;
+import ev3dev.utils.Sysfs;
+import lejos.utility.Delay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
+
+/**
+ * Class that provides access methods for the local audio device
+ *
+ * &lt;p&gt;The class is implemented as Singleton.
+ *
+ * &lt;p&gt;Note: Only tested with EV3Brick
+ *
+ * @author Juan Antonio Breña Moral
+ */
+public class Sound extends EV3DevDevice {
+
+<span class="fc" id="L33">    private static final Logger LOGGER = LoggerFactory.getLogger(Sound.class);</span>
+
+    private static final String EV3_PHYSICAL_SOUND_PATH = &quot;/sys/devices/platform/snd-legoev3&quot;;
+    public static final String EV3DEV_SOUND_KEY = &quot;EV3DEV_SOUND_KEY&quot;;
+    private static String EV3_SOUND_PATH;
+
+    private static final String CMD_BEEP = &quot;beep&quot;;
+    public static final String VOLUME = &quot;volume&quot;;
+
+    private static String VOLUME_PATH;
+    private static final String DISABLED_FEATURE_MESSAGE = &quot;This feature is disabled for this platform.&quot;;
+
+    private final EV3DevDistro CURRENT_DISTRO;
+
+    private static Sound instance;
+
+<span class="fc" id="L49">    private int volume = 0;</span>
+
+    /**
+     * Return a Instance of Sound.
+     *
+     * @return A Sound instance
+     */
+    public static Sound getInstance() {
+
+<span class="fc" id="L58">        LOGGER.info(&quot;Providing a Sound instance&quot;);</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (Objects.isNull(instance)) {</span>
+<span class="fc" id="L61">            instance = new Sound();</span>
+        }
+<span class="fc" id="L63">        return instance;</span>
+    }
+
+    // Prevent duplicate objects
+<span class="fc" id="L67">    private Sound() {</span>
+
+<span class="fc" id="L69">        LOGGER.info(&quot;Creating a instance of Sound&quot;);</span>
+
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        EV3_SOUND_PATH = Objects.nonNull(System.getProperty(EV3DEV_SOUND_KEY))</span>
+<span class="pc" id="L72">            ? System.getProperty(EV3DEV_SOUND_KEY) : EV3_PHYSICAL_SOUND_PATH;</span>
+<span class="fc" id="L73">        VOLUME_PATH = EV3_SOUND_PATH + &quot;/&quot; + VOLUME;</span>
+
+<span class="fc" id="L75">        CURRENT_DISTRO = EV3DevDistros.getInstance().getDistro();</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Beeps once.
+     */
+    public void beep() {
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="fc" id="L83">            LOGGER.debug(CMD_BEEP);</span>
+<span class="fc" id="L84">            Shell.execute(CMD_BEEP);</span>
+<span class="fc" id="L85">            Delay.msDelay(100);</span>
+        } else {
+<span class="nc" id="L87">            LOGGER.warn(DISABLED_FEATURE_MESSAGE);</span>
+        }
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Beeps twice.
+     */
+    public void twoBeeps() {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="nc" id="L96">            beep();</span>
+<span class="nc" id="L97">            beep();</span>
+        } else {
+<span class="nc" id="L99">            LOGGER.debug(DISABLED_FEATURE_MESSAGE);</span>
+        }
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Plays a tone, given its frequency and duration.
+     *
+     * @param frequency The frequency of the tone in Hertz (Hz).
+     * @param duration  The duration of the tone, in milliseconds.
+     * @param volume    The volume of the playback 100 corresponds to 100%
+     */
+    public void playTone(final int frequency, final int duration, final int volume) {
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="fc" id="L112">            this.setVolume(volume);</span>
+<span class="fc" id="L113">            this.playTone(frequency, duration);</span>
+        } else {
+<span class="nc" id="L115">            LOGGER.debug(DISABLED_FEATURE_MESSAGE);</span>
+        }
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Plays a tone, given its frequency and duration.
+     *
+     * @param frequency The frequency of the tone in Hertz (Hz).
+     * @param duration  The duration of the tone, in milliseconds.
+     */
+    public void playTone(final int frequency, final int duration) {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (CURRENT_PLATFORM.equals(EV3DevPlatform.EV3BRICK)) {</span>
+<span class="fc" id="L127">            final String cmdTone = CMD_BEEP + &quot; -f &quot; + frequency + &quot; -l &quot; + duration;</span>
+<span class="fc" id="L128">            Shell.execute(cmdTone);</span>
+<span class="fc" id="L129">        } else {</span>
+<span class="nc" id="L130">            LOGGER.debug(DISABLED_FEATURE_MESSAGE);</span>
+        }
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Play a wav file. Must be mono, from 8kHz to 48kHz, and 8-bit or 16-bit.
+     *
+     * @param file   the 8-bit or 16-bit PWM (WAV) sample file
+     * @param volume the volume percentage 0 - 100
+     */
+    public void playSample(final File file, final int volume) {
+<span class="nc" id="L141">        this.setVolume(volume);</span>
+<span class="nc" id="L142">        this.playSample(file);</span>
+<span class="nc" id="L143">    }</span>
+
+    /**
+     * Play a wav file. Must be mono, from 8kHz to 48kHz, and 8-bit or 16-bit.
+     *
+     * @param file the 8-bit or 16-bit PWM (WAV) sample file
+     */
+    public void playSample(final File file) {
+<span class="nc" id="L151">        try (AudioInputStream audioIn = AudioSystem.getAudioInputStream(file.toURI().toURL())) {</span>
+
+<span class="nc" id="L153">            Clip clip = AudioSystem.getClip();</span>
+<span class="nc" id="L154">            clip.open(audioIn);</span>
+<span class="nc" id="L155">            clip.start();</span>
+<span class="nc" id="L156">            Delay.usDelay(clip.getMicrosecondLength());</span>
+<span class="nc" id="L157">            clip.close();</span>
+
+<span class="fc" id="L159">        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {</span>
+<span class="fc" id="L160">            LOGGER.error(e.getLocalizedMessage(), e);</span>
+<span class="fc" id="L161">            throw new RuntimeException(e);</span>
+<span class="nc" id="L162">        }</span>
+<span class="nc" id="L163">    }</span>
+
+    /**
+     * Set the master volume level
+     *
+     * @param volume 0-100
+     */
+    public void setVolume(final int volume) {
+
+<span class="fc" id="L172">        this.volume = volume;</span>
+
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (CURRENT_DISTRO.equals(EV3DevDistro.JESSIE)) {</span>
+            //TODO Review to move to this.setIntegerAttribute();
+<span class="nc" id="L176">            Sysfs.writeString(VOLUME_PATH, &quot;&quot; + volume);</span>
+        } else {
+<span class="fc" id="L178">            final String cmdVolume = &quot;amixer set PCM,0 &quot; + volume + &quot;%&quot;;</span>
+<span class="fc" id="L179">            Shell.execute(cmdVolume);</span>
+        }
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Get the current master volume level
+     *
+     * @return the current master volume 0-100
+     */
+    public int getVolume() {
+
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        if (CURRENT_DISTRO.equals(EV3DevDistro.JESSIE)) {</span>
+            //TODO Review to move to this.getIntegerAttribute()
+<span class="nc" id="L192">            return Sysfs.readInteger(VOLUME_PATH);</span>
+        } else {
+<span class="fc" id="L194">            return this.volume;</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

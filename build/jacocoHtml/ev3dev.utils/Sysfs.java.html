@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sysfs.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">Sysfs.java</span></div><h1>Sysfs.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * The class responsible to interact with Sysfs on EV3Dev
+ *
+ * @author Juan Antonio Breña Moral
+ * @author David Walend
+ *
+ */
+<span class="fc" id="L22">@Slf4j</span>
+<span class="nc" id="L23">public class Sysfs {</span>
+
+    /**
+     * Write a value in a file.
+     *
+     * @param filePath File path
+     * @param value    value to write
+     * @return A boolean value if the operation was written or not.
+     */
+    public static boolean writeString(final String filePath, final String value) {
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L34">            LOGGER.trace(&quot;echo &quot; + value + &quot; &gt; &quot; + filePath);</span>
+        }
+        try {
+<span class="fc" id="L37">            final File file = new File(filePath);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            if (file.canWrite()) {</span>
+                //TODO Review if it possible to improve
+<span class="fc" id="L40">                PrintWriter out = new PrintWriter(file);</span>
+<span class="fc" id="L41">                out.println(value);</span>
+<span class="fc" id="L42">                out.flush();</span>
+<span class="fc" id="L43">                out.close();</span>
+                //TODO Review
+<span class="fc" id="L45">            } else {</span>
+<span class="fc" id="L46">                LOGGER.error(&quot;File: '{}' without write permissions.&quot;, filePath);</span>
+<span class="fc" id="L47">                return false;</span>
+            }
+<span class="nc" id="L49">        } catch (IOException e) {</span>
+<span class="nc" id="L50">            LOGGER.error(e.getLocalizedMessage(), e);</span>
+<span class="nc" id="L51">            return false;</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">        return true;</span>
+    }
+
+    public static boolean writeInteger(final String filePath, final int value) {
+<span class="fc" id="L57">        return writeString(filePath, new StringBuilder().append(value).toString());</span>
+    }
+
+    /**
+     * Read an Attribute in the Sysfs with containing String values
+     *
+     * @param filePath path
+     * @return value from attribute
+     */
+    public static String readString(final String filePath) {
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L68">            LOGGER.trace(&quot;cat &quot; + filePath);</span>
+        }
+        try {
+<span class="fc" id="L71">            try (DataChannelRereader rereader = new DataChannelRereader(filePath)) {</span>
+<span class="fc" id="L72">                String result = rereader.readString();</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L74">                    LOGGER.trace(&quot;value: {}&quot;, result);</span>
+                }
+<span class="fc" id="L76">                return result;</span>
+            }
+<span class="fc" id="L78">        } catch (IOException e) {</span>
+<span class="fc" id="L79">            LOGGER.error(e.getLocalizedMessage(), e);</span>
+<span class="fc" id="L80">            throw new RuntimeException(&quot;Problem reading path: &quot; + filePath, e);</span>
+        }
+    }
+
+    /**
+     * Read an Attribute in the Sysfs with containing Integer values
+     *
+     * @param filePath path
+     * @return value from attribute
+     */
+    public static int readInteger(final String filePath) {
+<span class="fc" id="L91">        return Integer.parseInt(readString(filePath));</span>
+    }
+
+    /**
+     * Read an Attribute in the Sysfs with containing Float values
+     *
+     * @param filePath path
+     * @return value from attribute
+     */
+    public static float readFloat(final String filePath) {
+<span class="fc" id="L101">        return Float.parseFloat(readString(filePath));</span>
+    }
+
+    /**
+     * Retrieve the elements contained in a path
+     *
+     * @param filePath path
+     * @return an List with options from a path
+     */
+    public static List&lt;File&gt; getElements(final String filePath) {
+<span class="fc" id="L111">        final File f = new File(filePath);</span>
+<span class="pc bpc" id="L112" title="1 of 4 branches missed.">        if (existPath(filePath) &amp;&amp; (f.listFiles().length &gt; 0)) {</span>
+<span class="fc" id="L113">            return new ArrayList&lt;&gt;(Arrays.asList(f.listFiles()));</span>
+        } else {
+<span class="fc" id="L115">            throw new RuntimeException(&quot;The path doesn't exist: &quot; + filePath);</span>
+        }
+    }
+
+    /**
+     * This method is used to detect folders in /sys/class/
+     *
+     * @param filePath path
+     * @return boolean
+     */
+    public static boolean existPath(final String filePath) {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="fc" id="L127">            LOGGER.trace(&quot;ls &quot; + filePath);</span>
+        }
+<span class="fc" id="L129">        final File f = new File(filePath);</span>
+<span class="pc bpc" id="L130" title="1 of 4 branches missed.">        return f.exists() &amp;&amp; f.isDirectory();</span>
+    }
+
+    public static boolean existFile(Path pathToFind) {
+<span class="fc" id="L134">        return Files.exists(pathToFind);</span>
+    }
+
+    /**
+     * Method to write bytes in a path
+     *
+     * @param path path
+     * @param value value to write
+     * @return Result
+     */
+    public static boolean writeBytes(final String path, final byte[] value) {
+        try {
+<span class="nc" id="L146">            Files.write(Paths.get(path), value, StandardOpenOption.WRITE);</span>
+<span class="nc" id="L147">        } catch (IOException e) {</span>
+<span class="nc" id="L148">            throw new RuntimeException(&quot;Unable to draw the LCD&quot;, e);</span>
+<span class="nc" id="L149">        }</span>
+<span class="nc" id="L150">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ev3dev.utils.JarResourceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2021-08-08T13:40:45" hostname="muziektop" time="0.022">
+  <properties/>
+  <testcase name="deleteSuccessTest2" classname="ev3dev.utils.JarResourceTest" time="0.003"/>
+  <testcase name="readSuccessTest" classname="ev3dev.utils.JarResourceTest" time="0.002"/>
+  <testcase name="exportSuccessTest" classname="ev3dev.utils.JarResourceTest" time="0.002"/>
+  <testcase name="deleteSuccessTest" classname="ev3dev.utils.JarResourceTest" time="0.005"/>
+  <testcase name="exportKoTest" classname="ev3dev.utils.JarResourceTest" time="0.007"/>
+  <testcase name="readKoTest" classname="ev3dev.utils.JarResourceTest" time="0.0"/>
+  <system-out><![CDATA[2021-08-08 15:40:45 [Test worker] WARN  ev3dev.utils.Shell - Delete operation is failed. BadPath.png
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.JarResourceTest - /home/roel/Projects/ev3dev-lang-java/build/classes/java/java_logo.png
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.JarResourceTest - /home/roel/Projects/ev3dev-lang-java/build/classes/java/java_logo.png
+2021-08-08 15:40:45 [Test worker] INFO  ev3dev.utils.Shell - File deleted!
+2021-08-08 15:40:45 [Test worker] ERROR ev3dev.utils.Shell - Cannot get resource "BadPath.png" from Jar file.
+2021-08-08 15:40:45 [Test worker] ERROR ev3dev.utils.Shell - Cannot get resource "BadPath.png" from Jar file.
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

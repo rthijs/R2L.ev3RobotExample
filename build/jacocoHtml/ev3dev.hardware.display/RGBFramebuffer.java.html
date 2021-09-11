@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RGBFramebuffer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.hardware.display</a> &gt; <span class="el_source">RGBFramebuffer.java</span></div><h1>RGBFramebuffer.java</h1><pre class="source lang-java linenums">package ev3dev.hardware.display;
+
+import com.sun.jna.LastErrorException;
+import ev3dev.utils.io.NativeFramebuffer;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static ev3dev.utils.io.NativeConstants.FB_TYPE_PACKED_PIXELS;
+import static ev3dev.utils.io.NativeConstants.FB_VISUAL_TRUECOLOR;
+
+/**
+ * Linux XRGB 32bpp framebuffer
+ *
+ * @since 2.4.7
+ */
+<span class="fc" id="L21">@Slf4j</span>
+public class RGBFramebuffer extends LinuxFramebuffer {
+    /**
+     * Create and initialize new Linux RGB framebuffer.
+     *
+     * @param fb   The framebuffer device (e.g. /dev/fb0)
+     * @param disp Display manager (e.g. /dev/tty)
+     */
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">    public RGBFramebuffer(@NonNull NativeFramebuffer fb, DisplayInterface disp)</span>
+        throws LastErrorException, IllegalArgumentException {
+
+<span class="fc" id="L32">        super(fb, disp);</span>
+
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (getFixedInfo().type != FB_TYPE_PACKED_PIXELS) {</span>
+            try {
+<span class="nc" id="L36">                close();</span>
+<span class="nc" id="L37">            } catch (LastErrorException e) {</span>
+<span class="nc" id="L38">                throw new RuntimeException(&quot;Cannot close framebuffer&quot;, e);</span>
+<span class="nc" id="L39">            }</span>
+<span class="nc" id="L40">            LOGGER.debug(&quot;Framebuffer uses non-packed pixels&quot;);</span>
+<span class="nc" id="L41">            throw new IllegalArgumentException(&quot;Only framebuffers with packed pixels are supported&quot;);</span>
+        }
+<span class="pc bpc" id="L43" title="1 of 4 branches missed.">        if (getFixedInfo().visual != FB_VISUAL_TRUECOLOR || getVariableInfo().bits_per_pixel != 32) {</span>
+            try {
+<span class="fc" id="L45">                close();</span>
+<span class="nc" id="L46">            } catch (LastErrorException e) {</span>
+<span class="nc" id="L47">                throw new RuntimeException(&quot;Cannot close framebuffer&quot;, e);</span>
+<span class="fc" id="L48">            }</span>
+<span class="fc" id="L49">            LOGGER.debug(&quot;Framebuffer is not 32bpp truecolor&quot;);</span>
+<span class="fc" id="L50">            throw new IllegalArgumentException(&quot;Only framebuffers with 32bpp RGB are supported&quot;);</span>
+        }
+        // taking ownership
+<span class="fc" id="L53">        initializeMemory();</span>
+<span class="fc" id="L54">        setDeviceClose(true);</span>
+<span class="fc" id="L55">    }</span>
+
+    @Override
+    public BufferedImage createCompatibleBuffer(int width, int height) {
+<span class="fc" id="L59">        int stride = 4 * width;</span>
+<span class="fc" id="L60">        return createCompatibleBuffer(width, height, stride, new byte[stride * height]);</span>
+    }
+
+    @Override
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    public BufferedImage createCompatibleBuffer(int width, int height, int stride, @NonNull byte[] buffer) {</span>
+<span class="fc" id="L65">        return ImageUtils.createXRGBImage(width, height, stride, getComponentOffsets(), buffer);</span>
+    }
+
+    /**
+     * get color offsets, use the not-used-one for alpha
+     *
+     * @return Offsets: { R, G, B, A }
+     */
+    private int[] getComponentOffsets() {
+<span class="fc" id="L74">        int[] offsets = new int[4];</span>
+<span class="fc" id="L75">        offsets[0] = getVariableInfo().red.toLEByteOffset();</span>
+<span class="fc" id="L76">        offsets[1] = getVariableInfo().green.toLEByteOffset();</span>
+<span class="fc" id="L77">        offsets[2] = getVariableInfo().blue.toLEByteOffset();</span>
+<span class="fc" id="L78">        List&lt;Integer&gt; set = Arrays.asList(0, 1, 2, 3);</span>
+<span class="fc" id="L79">        ArrayList&lt;Integer&gt; avail = new ArrayList&lt;&gt;(set);</span>
+<span class="fc" id="L80">        avail.remove((Integer) offsets[0]);</span>
+<span class="fc" id="L81">        avail.remove((Integer) offsets[1]);</span>
+<span class="fc" id="L82">        avail.remove((Integer) offsets[2]);</span>
+<span class="fc" id="L83">        offsets[3] = avail.get(0);</span>
+<span class="fc" id="L84">        return offsets;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

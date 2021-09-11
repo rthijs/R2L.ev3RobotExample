@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Motor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.actuators.lego.motors</a> &gt; <span class="el_source">Motor.java</span></div><h1>Motor.java</h1><pre class="source lang-java linenums">package ev3dev.actuators.lego.motors;
+
+import lejos.hardware.port.MotorPort;
+import lejos.robotics.RegulatedMotor;
+
+/**
+ * Motor class contains 3 instances of regulated motors.
+ *
+ * &lt;p&gt;Example:
+ * &lt;code&gt;&lt;pre&gt;
+ *   Motor.A.setSpeed(720);// 2 RPM
+ *   Motor.C.setSpeed(720);
+ *   Motor.A.forward();
+ *   Motor.C.forward();
+ *   Thread.sleep (1000);
+ *   Motor.A.stop();
+ *   Motor.C.stop();
+ *   Motor.A.rotateTo( 360);
+ *   Motor.A.rotate(-720,true);
+ *   while(Motor.A.isMoving() :Thread.yield();
+ *   int angle = Motor.A.getTachoCount(); // should be -360
+ *   LCD.drawInt(angle,0,0);
+ * &lt;/pre&gt;&lt;/code&gt;
+ * @author Roger Glassey/Andy Shaw/Juan Antonio Breña Moral
+ */
+public class Motor {
+
+    /**
+     * Motor A.
+     */
+<span class="fc" id="L31">    public static RegulatedMotor A = new NXTRegulatedMotor(MotorPort.A);</span>
+
+    /**
+     * Motor B.
+     */
+<span class="fc" id="L36">    public static RegulatedMotor B = new NXTRegulatedMotor(MotorPort.B);</span>
+
+    /**
+     * Motor C.
+     */
+<span class="fc" id="L41">    public static RegulatedMotor C = new NXTRegulatedMotor(MotorPort.C);</span>
+
+    /**
+     * Motor D.
+     */
+<span class="fc" id="L46">    public static RegulatedMotor D = new NXTRegulatedMotor(MotorPort.D);</span>
+
+    private Motor() {
+        // Motor class cannot be instantiated
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

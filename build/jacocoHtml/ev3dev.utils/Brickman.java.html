@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Brickman.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils</a> &gt; <span class="el_source">Brickman.java</span></div><h1>Brickman.java</h1><pre class="source lang-java linenums">package ev3dev.utils;
+
+import lombok.extern.slf4j.Slf4j;
+
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+<span class="nc" id="L10">@Slf4j</span>
+<span class="nc" id="L11">public class Brickman {</span>
+
+    private static final String DISABLE_BRICKMAN_COMMAND = &quot;sudo systemctl stop brickman&quot;;
+    private static final String ENABLE_BRICKMAN_COMMAND = &quot;sudo systemctl start brickman&quot;;
+
+    /**
+     * Disable Brickman.
+     */
+    public static void disable() {
+<span class="nc" id="L20">        LOGGER.trace(&quot;Disabling Brickman service&quot;);</span>
+
+<span class="nc" id="L22">        Shell.execute(DISABLE_BRICKMAN_COMMAND);</span>
+
+<span class="nc" id="L24">        Runtime.getRuntime().addShutdownHook(new Thread(Brickman::restoreBrickman, &quot;restore brickman&quot;));</span>
+<span class="nc" id="L25">    }</span>
+
+    /**
+     * Enable Brickman.
+     */
+    private static void restoreBrickman() {
+<span class="nc" id="L31">        LOGGER.trace(&quot;Enabling Brickman service&quot;);</span>
+
+<span class="nc" id="L33">        Shell.execute(ENABLE_BRICKMAN_COMMAND);</span>
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Draw Duke.
+     * @param gfx Required context to draw an image.
+     */
+    public static void drawJavaLogo(Graphics2D gfx) {
+<span class="nc" id="L41">        LOGGER.debug(&quot;Showing Java logo on EV3 Brick&quot;);</span>
+
+        try {
+<span class="nc" id="L44">            Rectangle bounds = gfx.getClipBounds();</span>
+<span class="nc" id="L45">            final BufferedImage image = JarResource.loadImage(JarResource.JAVA_DUKE_IMAGE_NAME);</span>
+<span class="nc" id="L46">            int x = (bounds.width - image.getWidth()) / 2;</span>
+<span class="nc" id="L47">            int y = (bounds.height - image.getHeight()) / 2;</span>
+<span class="nc" id="L48">            gfx.drawImage(image, x, y, null);</span>
+<span class="nc" id="L49">        } catch (IOException e) {</span>
+<span class="nc" id="L50">            LOGGER.error(e.getLocalizedMessage());</span>
+<span class="nc" id="L51">        }</span>
+<span class="nc" id="L52">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

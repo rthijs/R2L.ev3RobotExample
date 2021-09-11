@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="nl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeFramebuffer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ev3dev-lang-java</a> &gt; <a href="index.source.html" class="el_package">ev3dev.utils.io</a> &gt; <span class="el_source">NativeFramebuffer.java</span></div><h1>NativeFramebuffer.java</h1><pre class="source lang-java linenums">package ev3dev.utils.io;
+
+import com.sun.jna.LastErrorException;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+import lombok.NonNull;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static ev3dev.utils.io.NativeConstants.FBIOGET_CON2FBMAP;
+import static ev3dev.utils.io.NativeConstants.FBIOGET_FSCREENINFO;
+import static ev3dev.utils.io.NativeConstants.FBIOGET_VSCREENINFO;
+import static ev3dev.utils.io.NativeConstants.FBIOPUT_VSCREENINFO;
+
+/**
+ * Linux framebuffer wrapper class
+ *
+ * @since 2.4.7
+ */
+public class NativeFramebuffer extends NativeDevice {
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L30" title="All 2 branches missed.">    public NativeFramebuffer(@NonNull String dname) throws LastErrorException {</span>
+<span class="nc" id="L31">        super(dname);</span>
+<span class="nc" id="L32">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     * @param flags Opening mode, e.g. read, write or both.
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    public NativeFramebuffer(@NonNull String dname, int flags) throws LastErrorException {</span>
+<span class="nc" id="L42">        super(dname, flags);</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L52" title="2 of 4 branches missed.">    public NativeFramebuffer(@NonNull String dname, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="fc" id="L53">        super(dname, libc);</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Create a native device to provide access to the specified character device
+     *
+     * @param dname name of the character device
+     * @param flags Opening mode, e.g. read, write or both.
+     * @param libc  standard C library interface to be used.
+     * @throws LastErrorException when operations fails
+     */
+<span class="nc bnc" id="L64" title="All 4 branches missed.">    public NativeFramebuffer(@NonNull String dname, int flags, @NonNull ILibc libc) throws LastErrorException {</span>
+<span class="nc" id="L65">        super(dname, flags, libc);</span>
+<span class="nc" id="L66">    }</span>
+
+    /**
+     * Fetch fixed screen info.
+     *
+     * @return Non-changing info about the display.
+     */
+    public fb_fix_screeninfo getFixedScreenInfo() throws LastErrorException {
+<span class="fc" id="L74">        fb_fix_screeninfo info = new fb_fix_screeninfo();</span>
+<span class="fc" id="L75">        super.ioctl(FBIOGET_FSCREENINFO, info.getPointer());</span>
+<span class="fc" id="L76">        info.read();</span>
+<span class="fc" id="L77">        return info;</span>
+    }
+
+    /**
+     * Fetch variable screen info.
+     *
+     * @return Changeable info about the display.
+     * @throws LastErrorException when operations fails
+     */
+    public fb_var_screeninfo getVariableScreenInfo() throws LastErrorException {
+<span class="fc" id="L87">        fb_var_screeninfo info = new fb_var_screeninfo();</span>
+<span class="fc" id="L88">        super.ioctl(FBIOGET_VSCREENINFO, info.getPointer());</span>
+<span class="fc" id="L89">        info.read();</span>
+<span class="fc" id="L90">        return info;</span>
+    }
+
+    /**
+     * Send variable screen info.
+     *
+     * @param info Changeable info about the display.
+     * @throws LastErrorException when operations fails
+     */
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">    public void setVariableScreenInfo(@NonNull fb_var_screeninfo info) throws LastErrorException {</span>
+<span class="fc" id="L100">        info.write();</span>
+<span class="fc" id="L101">        super.ioctl(FBIOPUT_VSCREENINFO, info.getPointer());</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Identify which framebuffer is connected to a specified VT.
+     *
+     * @param console VT number.
+     * @return Framebuffer number or -1 if console has no framebuffer.
+     * @throws LastErrorException when operations fails
+     */
+    public int mapConsoleToFramebuffer(int console) throws LastErrorException {
+<span class="nc" id="L112">        fb_con2fbmap map = new fb_con2fbmap();</span>
+<span class="nc" id="L113">        map.console = console;</span>
+<span class="nc" id="L114">        map.write();</span>
+<span class="nc" id="L115">        super.ioctl(FBIOGET_CON2FBMAP, map.getPointer());</span>
+<span class="nc" id="L116">        map.read();</span>
+<span class="nc" id="L117">        return map.framebuffer;</span>
+    }
+
+    /**
+     * fb_fix_screeninfo mapping
+     */
+    public static class fb_fix_screeninfo extends Structure {
+        /**
+         * identification string eg &quot;TT Builtin&quot;
+         */
+<span class="pc" id="L127">        public byte[] id = new byte[16];</span>
+        /**
+         * Start of frame buffer mem (physical address)
+         */
+        public NativeLong smem_start;
+        /**
+         * Length of frame buffer mem
+         */
+        public int smem_len;
+        /**
+         * see FB_TYPE_*
+         */
+        public int type;
+        /**
+         * Interleave for interleaved Planes
+         */
+        public int type_aux;
+        /**
+         * see FB_VISUAL_*
+         */
+        public int visual;
+        /**
+         * zero if no hardware panning
+         */
+        public short xpanstep;
+        /**
+         * zero if no hardware panning
+         */
+        public short ypanstep;
+        /**
+         * zero if no hardware ywrap
+         */
+        public short ywrapstep;
+        /**
+         * length of a line in bytes
+         */
+        public int line_length;
+        /**
+         * Start of Memory Mapped I/O (physical address)
+         */
+        public NativeLong mmio_start;
+        /**
+         * Length of Memory Mapped I/O
+         */
+        public int mmio_len;
+        /**
+         * Indicate to driver which specific chip/card we have
+         */
+        public int accel;
+        /**
+         * see FB_CAP_*
+         */
+        public short capabilities;
+        /**
+         * Reserved for future compatibility
+         */
+<span class="pc" id="L183">        public short[] reserved = new short[2];</span>
+
+        /**
+         * Initialize this structure.
+         */
+        public fb_fix_screeninfo() {
+<span class="fc" id="L189">            super(ALIGN_GNUC);</span>
+<span class="fc" id="L190">        }</span>
+
+        public fb_fix_screeninfo(Pointer p) {
+<span class="nc" id="L193">            super(p, ALIGN_GNUC);</span>
+<span class="nc" id="L194">        }</span>
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="fc" id="L198">            return Arrays.asList(&quot;id&quot;, &quot;smem_start&quot;, &quot;smem_len&quot;,</span>
+                    &quot;type&quot;, &quot;type_aux&quot;, &quot;visual&quot;,
+                    &quot;xpanstep&quot;, &quot;ypanstep&quot;, &quot;ywrapstep&quot;, &quot;line_length&quot;,
+                    &quot;mmio_start&quot;, &quot;mmio_len&quot;, &quot;accel&quot;, &quot;capabilities&quot;, &quot;reserved&quot;);
+        }
+
+        /**
+         * Reference wrapper
+         */
+<span class="nc" id="L207">        public static class ByReference extends fb_fix_screeninfo implements Structure.ByReference {</span>
+        }
+
+        /**
+         * Value wrapper
+         */
+<span class="nc" id="L213">        public static class ByValue extends fb_fix_screeninfo implements Structure.ByValue {</span>
+        }
+    }
+
+    /**
+     * fb_bitfield mapping
+     */
+    public static class fb_bitfield extends Structure {
+        /**
+         * beginning of bitfield
+         */
+        public int offset;
+        /**
+         * length of bitfield
+         */
+        public int length;
+        /**
+         * != 0 : Most significant bit is right
+         */
+        public int msb_right;
+
+        /**
+         * Initialize this structure.
+         */
+        public fb_bitfield() {
+<span class="fc" id="L238">            super(ALIGN_GNUC);</span>
+<span class="fc" id="L239">        }</span>
+
+        public fb_bitfield(Pointer p) {
+<span class="nc" id="L242">            super(p, ALIGN_GNUC);</span>
+<span class="nc" id="L243">        }</span>
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="fc" id="L247">            return Arrays.asList(&quot;offset&quot;, &quot;length&quot;, &quot;msb_right&quot;);</span>
+        }
+
+        /**
+         * Calculate little-endian byte offset from the bitshift number.
+         *
+         * @return Offset in byte array
+         */
+        public int toLEByteOffset() {
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">            if (length != 8) {</span>
+<span class="nc" id="L257">                throw new IllegalArgumentException(&quot;Byte offset is applicable only to 8bit sized components&quot;);</span>
+            }
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">            if ((offset % 8) != 0) {</span>
+<span class="nc" id="L260">                throw new IllegalArgumentException(&quot;Byte offset is applicable only to 8bit aligned components&quot;);</span>
+            }
+<span class="fc" id="L262">            return offset / 8;</span>
+        }
+
+        /**
+         * Reference wrapper
+         */
+<span class="nc" id="L268">        public static class ByReference extends fb_bitfield implements Structure.ByReference {</span>
+        }
+
+        /**
+         * Value wrapper
+         */
+<span class="fc" id="L274">        public static class ByValue extends fb_bitfield implements Structure.ByValue {</span>
+        }
+    }
+
+    /**
+     * fb_var_screeninfo mapping
+     */
+    public static class fb_var_screeninfo extends Structure {
+        /**
+         * visible X resolution
+         */
+        public int xres;
+        /**
+         * visible Y resolution
+         */
+        public int yres;
+        /**
+         * virtual X resolution
+         */
+        public int xres_virtual;
+        /**
+         * virtual Y resolution
+         */
+        public int yres_virtual;
+        /**
+         * offset from virtual to visible X resolution
+         */
+        public int xoffset;
+        /**
+         * offset from virtual to visible Y resolution
+         */
+        public int yoffset;
+        /**
+         * BPP value
+         */
+        public int bits_per_pixel;
+        /**
+         * 0 = color, 1 = grayscale, &gt;1 = FOURCC
+         */
+        public int grayscale;
+        /**
+         * info about red channel
+         */
+        public fb_bitfield.ByValue red;
+        /**
+         * info about green channel
+         */
+        public fb_bitfield.ByValue green;
+        /**
+         * info about blue channel
+         */
+        public fb_bitfield.ByValue blue;
+        /**
+         * info about transparency channel
+         */
+        public fb_bitfield.ByValue transp;
+        /**
+         * != 0 Non standard pixel format
+         */
+        public int nonstd;
+        /**
+         * see FB_ACTIVATE_*
+         */
+        public int activate;
+        /**
+         * height of picture in mm
+         */
+        public int height;
+        /**
+         * width of picture in mm
+         */
+        public int width;
+        /**
+         * (OBSOLETE) see fb_info.flags
+         */
+        public int accel_flags;
+        /**
+         * pixel clock in ps (pico seconds)
+         */
+        public int pixclock;
+        /**
+         * time from sync to picture (pixclocks)
+         */
+        public int left_margin;
+        /**
+         * time from picture to sync (pixclocks)
+         */
+        public int right_margin;
+        /**
+         * time from sync to picture (pixclocks)
+         */
+        public int upper_margin;
+        /**
+         * time from sync to picture (pixclocks)
+         */
+        public int lower_margin;
+        /**
+         * length of horizontal sync (pixclocks)
+         */
+        public int hsync_len;
+        /**
+         * length of vertical sync (pixclocks)
+         */
+        public int vsync_len;
+        /**
+         * see FB_SYNC_*
+         */
+        public int sync;
+        /**
+         * see FB_VMODE_*
+         */
+        public int vmode;
+        /**
+         * angle we rotate counter clockwise
+         */
+        public int rotate;
+        /**
+         * colorspace for FOURCC-based modes
+         */
+        public int colorspace;
+        /**
+         * Reserved for future compatibility
+         */
+<span class="fc" id="L397">        public int[] reserved = new int[4];</span>
+
+        /**
+         * Initialize this structure.
+         */
+        public fb_var_screeninfo() {
+<span class="fc" id="L403">            super(ALIGN_GNUC);</span>
+<span class="fc" id="L404">        }</span>
+
+        public fb_var_screeninfo(Pointer p) {
+<span class="fc" id="L407">            super(p, ALIGN_GNUC);</span>
+<span class="fc" id="L408">        }</span>
+
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="fc" id="L413">            return Arrays.asList(&quot;xres&quot;, &quot;yres&quot;, &quot;xres_virtual&quot;, &quot;yres_virtual&quot;,</span>
+                    &quot;xoffset&quot;, &quot;yoffset&quot;, &quot;bits_per_pixel&quot;, &quot;grayscale&quot;,
+                    &quot;red&quot;, &quot;green&quot;, &quot;blue&quot;, &quot;transp&quot;, &quot;nonstd&quot;, &quot;activate&quot;,
+                    &quot;height&quot;, &quot;width&quot;, &quot;accel_flags&quot;, &quot;pixclock&quot;,
+                    &quot;left_margin&quot;, &quot;right_margin&quot;, &quot;upper_margin&quot;, &quot;lower_margin&quot;,
+                    &quot;hsync_len&quot;, &quot;vsync_len&quot;, &quot;sync&quot;, &quot;vmode&quot;, &quot;rotate&quot;, &quot;colorspace&quot;, &quot;reserved&quot;);
+        }
+
+        /**
+         * Reference wrapper
+         */
+<span class="nc" id="L424">        public static class ByReference extends fb_var_screeninfo implements Structure.ByReference {</span>
+        }
+
+        /**
+         * Value wrapper
+         */
+<span class="nc" id="L430">        public static class ByValue extends fb_var_screeninfo implements Structure.ByValue {</span>
+        }
+    }
+
+    public static class fb_con2fbmap extends Structure {
+        public int console;
+        public int framebuffer;
+
+        public fb_con2fbmap() {
+<span class="nc" id="L439">            super(ALIGN_GNUC);</span>
+<span class="nc" id="L440">        }</span>
+
+        public fb_con2fbmap(Pointer p) {
+<span class="nc" id="L443">            super(p, ALIGN_GNUC);</span>
+<span class="nc" id="L444">        }</span>
+
+        @Override
+        protected List&lt;String&gt; getFieldOrder() {
+<span class="nc" id="L448">            return Arrays.asList(&quot;console&quot;, &quot;framebuffer&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
